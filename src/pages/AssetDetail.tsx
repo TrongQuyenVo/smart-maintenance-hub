@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  ArrowLeft, 
-  Server, 
-  MapPin, 
+import {
+  ArrowLeft,
+  Server,
+  MapPin,
   Calendar,
   Settings,
   FileText,
@@ -22,7 +22,7 @@ import { TelemetryChart } from '@/components/telemetry/TelemetryChart';
 import { WOStatusBadge } from '@/components/workorder/WOStatusBadge';
 import { WOSourceBadge } from '@/components/workorder/WOSourceBadge';
 import { mockAssets, mockWorkOrders, mockAlerts, mockTBMPolicies, mockCBMPolicies, generateTelemetryData } from '@/data/mockData';
-import { cn } from '@/lib/utils';
+import { cn, getAssetTypeLabel } from '@/lib/utils';
 
 export default function AssetDetail() {
   const { id } = useParams();
@@ -35,13 +35,21 @@ export default function AssetDetail() {
   const assetTBMPolicies = mockTBMPolicies.filter(p => p.assetId === id);
   const assetCBMPolicies = mockCBMPolicies.filter(p => p.assetId === id);
 
+  const metricLabels: Record<string, string> = {
+    temperature: 'Nhiệt độ',
+    current: 'Dòng điện',
+    pressure: 'Áp suất',
+    vibration: 'Rung động',
+    humidity: 'Độ ẩm',
+  };
+
   if (!asset) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground mb-4">Asset not found</p>
+        <p className="text-muted-foreground mb-4">Không tìm thấy thiết bị</p>
         <Button variant="outline" onClick={() => navigate('/assets')}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Assets
+          Quay lại Thiết bị
         </Button>
       </div>
     );
@@ -50,7 +58,7 @@ export default function AssetDetail() {
   const lastCBMAlert = assetAlerts.find(a => !a.resolvedAt);
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -66,9 +74,9 @@ export default function AssetDetail() {
             <div className="flex items-center gap-3 mb-2">
               <span className="font-mono text-sm text-muted-foreground">{asset.id}</span>
               <AssetStatusIndicator status={asset.status} />
-              <Badge variant="outline">{asset.type}</Badge>
+              <Badge variant="outline">{getAssetTypeLabel(asset.type)}</Badge>
             </div>
-            <h1 className="text-2xl font-bold">{asset.name}</h1>
+            <span className="text-2xl font-bold">{asset.name}</span>
             <div className="flex items-center gap-2 mt-1 text-muted-foreground">
               <MapPin className="w-4 h-4" />
               <span>{asset.location}</span>
@@ -78,7 +86,7 @@ export default function AssetDetail() {
 
         <Button onClick={() => navigate(`/work-orders?asset=${asset.id}`)}>
           <Plus className="w-4 h-4 mr-2" />
-          Create WO
+          Tạo lệnh công việc
         </Button>
       </div>
 
@@ -87,19 +95,19 @@ export default function AssetDetail() {
         <TabsList className="bg-muted/50 p-1">
           <TabsTrigger value="overview" className="gap-2">
             <Server className="w-4 h-4" />
-            Overview
+            Tổng quan
           </TabsTrigger>
           <TabsTrigger value="maintenance" className="gap-2">
             <Wrench className="w-4 h-4" />
-            Maintenance
+            Bảo trì
           </TabsTrigger>
           <TabsTrigger value="telemetry" className="gap-2">
             <Activity className="w-4 h-4" />
-            Telemetry
+            Số liệu
           </TabsTrigger>
           <TabsTrigger value="docs" className="gap-2">
             <FileText className="w-4 h-4" />
-            Docs
+            Tài liệu
           </TabsTrigger>
         </TabsList>
 
@@ -110,7 +118,7 @@ export default function AssetDetail() {
             <Card className="lg:col-span-2 p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-primary" />
-                Specifications
+                Thông số kỹ thuật
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(asset.specifications).map(([key, value]) => (
@@ -121,18 +129,18 @@ export default function AssetDetail() {
                 ))}
                 {asset.manufacturer && (
                   <div className="p-3 rounded-lg bg-muted/30">
-                    <p className="text-sm text-muted-foreground">Manufacturer</p>
+                    <p className="text-sm text-muted-foreground">Nhà sản xuất</p>
                     <p className="font-medium">{asset.manufacturer}</p>
                   </div>
                 )}
                 {asset.model && (
                   <div className="p-3 rounded-lg bg-muted/30">
-                    <p className="text-sm text-muted-foreground">Model</p>
+                    <p className="text-sm text-muted-foreground">Mẫu</p>
                     <p className="font-mono font-medium">{asset.model}</p>
                   </div>
                 )}
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-sm text-muted-foreground">Install Date</p>
+                  <p className="text-sm text-muted-foreground">Ngày lắp đặt</p>
                   <p className="font-mono">{new Date(asset.installDate).toLocaleDateString('vi-VN')}</p>
                 </div>
               </div>
@@ -140,23 +148,23 @@ export default function AssetDetail() {
 
             {/* Maintenance Summary */}
             <Card className="p-6">
-              <h3 className="font-semibold mb-4">Maintenance Summary</h3>
+              <h3 className="font-semibold mb-4">Tổng quan bảo trì</h3>
               <div className="space-y-4">
                 <div className="p-3 rounded-lg bg-info/10 border border-info/30">
-                  <p className="text-sm text-muted-foreground">TBM Next Due</p>
+                  <p className="text-sm text-muted-foreground">Hạn TBM tiếp theo</p>
                   <p className="font-mono text-lg text-info">
-                    {asset.nextMaintenance 
+                    {asset.nextMaintenance
                       ? new Date(asset.nextMaintenance).toLocaleDateString('vi-VN')
-                      : 'Not scheduled'
+                      : 'Chưa lên lịch'
                     }
                   </p>
                 </div>
-                
+
                 {lastCBMAlert && (
                   <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
                     <div className="flex items-center gap-2 mb-1">
                       <AlertTriangle className="w-4 h-4 text-warning" />
-                      <p className="text-sm text-muted-foreground">Last CBM Alert</p>
+                      <p className="text-sm text-muted-foreground">Cảnh báo CBM gần nhất</p>
                     </div>
                     <p className="font-medium capitalize">{lastCBMAlert.metric}: {lastCBMAlert.value}</p>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -166,17 +174,17 @@ export default function AssetDetail() {
                 )}
 
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-sm text-muted-foreground">Last Maintenance</p>
+                  <p className="text-sm text-muted-foreground">Bảo trì gần nhất</p>
                   <p className="font-mono">
-                    {asset.lastMaintenance 
+                    {asset.lastMaintenance
                       ? new Date(asset.lastMaintenance).toLocaleDateString('vi-VN')
-                      : 'Never'
+                      : 'Chưa'
                     }
                   </p>
                 </div>
 
                 <div className="p-3 rounded-lg bg-muted/30">
-                  <p className="text-sm text-muted-foreground">Total WO History</p>
+                  <p className="text-sm text-muted-foreground">Tổng số lệnh</p>
                   <p className="font-mono text-2xl">{assetWorkOrders.length}</p>
                 </div>
               </div>
@@ -189,10 +197,10 @@ export default function AssetDetail() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* WO History List */}
             <Card className="lg:col-span-2 p-6">
-              <h3 className="font-semibold mb-4">Work Order History</h3>
+              <h3 className="font-semibold mb-4">Lịch sử lệnh công việc</h3>
               <div className="space-y-3">
                 {assetWorkOrders.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No work orders for this asset</p>
+                  <p className="text-muted-foreground text-center py-8">Không có lệnh công việc cho thiết bị này</p>
                 ) : (
                   assetWorkOrders.map((wo) => (
                     <motion.div
@@ -210,12 +218,12 @@ export default function AssetDetail() {
                           </div>
                           <h4 className="font-medium">{wo.title}</h4>
                           <p className="text-sm text-muted-foreground mt-1">
-                            Due: {new Date(wo.dueDate).toLocaleDateString('vi-VN')}
+                            Hạn: {new Date(wo.dueDate).toLocaleDateString('vi-VN')}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm text-muted-foreground">Assignee</p>
-                          <p className="font-medium">{wo.assignee || 'Unassigned'}</p>
+                          <p className="text-sm text-muted-foreground">Người được giao</p>
+                          <p className="font-medium">{wo.assignee || 'Chưa phân công'}</p>
                         </div>
                       </div>
                     </motion.div>
@@ -226,7 +234,7 @@ export default function AssetDetail() {
 
             {/* Policies */}
             <Card className="p-6">
-              <h3 className="font-semibold mb-4">Active Policies</h3>
+              <h3 className="font-semibold mb-4">Chính sách đang hoạt động</h3>
               <div className="space-y-4">
                 {assetTBMPolicies.map(policy => (
                   <div key={policy.id} className="p-3 rounded-lg bg-info/10 border border-info/30">
@@ -234,28 +242,28 @@ export default function AssetDetail() {
                       <Badge variant="outline" className="text-xs">TBM</Badge>
                       <span className="font-mono text-xs">{policy.id}</span>
                     </div>
-                    <p className="font-medium">Every {policy.intervalDays} days</p>
+                    <p className="font-medium">Chu kỳ: {policy.intervalDays} ngày</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Next: {new Date(policy.nextDueDate).toLocaleDateString('vi-VN')}
+                      Hạn tiếp theo: {new Date(policy.nextDueDate).toLocaleDateString('vi-VN')}
                     </p>
                   </div>
                 ))}
-                
+
                 {assetCBMPolicies.map(policy => (
                   <div key={policy.id} className="p-3 rounded-lg bg-primary/10 border border-primary/30">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="outline" className="text-xs">CBM</Badge>
                       <span className="font-mono text-xs">{policy.id}</span>
                     </div>
-                    <p className="font-medium capitalize">{policy.metric}</p>
+                    <p className="font-medium">{metricLabels[policy.metric]}</p>
                     <p className="text-sm text-muted-foreground">
-                      Threshold: {policy.operator === 'gt' ? '>' : '<'} {policy.threshold}
+                      Ngưỡng: {policy.operator === 'gt' ? '>' : '<'} {policy.threshold}
                     </p>
                   </div>
                 ))}
 
                 {assetTBMPolicies.length === 0 && assetCBMPolicies.length === 0 && (
-                  <p className="text-muted-foreground text-center py-4">No policies configured</p>
+                  <p className="text-muted-foreground text-center py-4">Chưa có chính sách nào được cấu hình</p>
                 )}
               </div>
             </Card>
@@ -268,7 +276,7 @@ export default function AssetDetail() {
             <Card className="p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2">
                 <Activity className="w-5 h-5 text-primary" />
-                Temperature Trend (24h)
+                Xu hướng nhiệt độ (24h)
               </h3>
               <TelemetryChart
                 assetId={asset.id}
@@ -280,7 +288,7 @@ export default function AssetDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card className="p-6">
-                <h3 className="font-semibold mb-4">Current Trend</h3>
+                <h3 className="font-semibold mb-4">Xu hướng dòng điện</h3>
                 <TelemetryChart
                   assetId={asset.id}
                   metric="current"
@@ -289,7 +297,7 @@ export default function AssetDetail() {
                 />
               </Card>
               <Card className="p-6">
-                <h3 className="font-semibold mb-4">Vibration Trend</h3>
+                <h3 className="font-semibold mb-4">Xu hướng rung động</h3>
                 <TelemetryChart
                   assetId={asset.id}
                   metric="vibration"
@@ -306,11 +314,11 @@ export default function AssetDetail() {
           <Card className="p-6">
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-primary" />
-              Documentation
+              Tài liệu
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {['User Manual', 'Technical Spec', 'Wiring Diagram', 'Maintenance Guide'].map((doc) => (
-                <div 
+              {['Hướng dẫn sử dụng', 'Thông số kỹ thuật', 'Sơ đồ đấu dây', 'Hướng dẫn bảo trì'].map((doc) => (
+                <div
                   key={doc}
                   className="p-4 rounded-lg border border-dashed border-muted-foreground/30 hover:border-primary/50 cursor-pointer transition-colors"
                 >
@@ -321,7 +329,7 @@ export default function AssetDetail() {
               ))}
               <div className="p-4 rounded-lg border border-dashed border-muted-foreground/30 hover:border-primary/50 cursor-pointer transition-colors flex flex-col items-center justify-center">
                 <Plus className="w-8 h-8 text-muted-foreground mb-2" />
-                <p className="text-muted-foreground">Upload Document</p>
+                <p className="text-muted-foreground">Tải lên tài liệu</p>
               </div>
             </div>
           </Card>

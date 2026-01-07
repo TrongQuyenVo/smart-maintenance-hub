@@ -132,7 +132,7 @@ export default function Assets() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Quản lý thiết bị</h1>
+          <span className="text-xl sm:text-2xl font-bold">Quản lý thiết bị</span>
           <p className="text-sm sm:text-base text-muted-foreground">
             {assets.length} thiết bị đã đăng ký
           </p>

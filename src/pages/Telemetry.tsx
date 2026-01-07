@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Activity, ThermometerSun, Zap, Gauge, Waves } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -33,14 +33,14 @@ export default function Telemetry() {
   );
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Giám sát dữ liệu cảm biến</h1>
+        <span className="text-xl sm:text-2xl font-bold">Giám sát dữ liệu cảm biến</span>
         <p className="text-sm sm:text-base text-muted-foreground">
           Dữ liệu thời gian thực và phân tích xu hướng
         </p>
@@ -159,9 +159,9 @@ export default function Telemetry() {
           const Icon = metric.icon;
           const randomValue = (
             metric.value === 'temperature' ? 35 + Math.random() * 10 :
-            metric.value === 'current' ? 28 + Math.random() * 10 :
-            metric.value === 'pressure' ? 4 + Math.random() * 2 :
-            1 + Math.random() * 3
+              metric.value === 'current' ? 28 + Math.random() * 10 :
+                metric.value === 'pressure' ? 4 + Math.random() * 2 :
+                  1 + Math.random() * 3
           ).toFixed(1);
 
           return (

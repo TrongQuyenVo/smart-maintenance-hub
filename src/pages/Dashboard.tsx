@@ -24,7 +24,7 @@ export default function Dashboard() {
     >
       {/* Page Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Bảng điều khiển bảo trì</h1>
+        <span className="text-xl sm:text-2xl font-bold">Bảng điều khiển bảo trì</span>
         <p className="text-sm sm:text-base text-muted-foreground">
           Tổng quan hoạt động bảo trì và tình trạng hệ thống
         </p>

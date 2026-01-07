@@ -1,17 +1,16 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Server, 
-  Settings, 
-  ClipboardList, 
-  Activity, 
+import {
+  LayoutDashboard,
+  Server,
+  Settings,
+  ClipboardList,
+  Activity,
   Bell,
   ChevronLeft,
   ChevronRight,
   Wrench,
-  Menu,
-  X
+  Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,7 @@ function NavContent({ collapsed, onItemClick }: { collapsed: boolean; onItemClic
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
         const Icon = item.icon;
-        
+
         return (
           <NavLink
             key={item.path}
@@ -78,7 +77,7 @@ export function MobileSidebar() {
             <span className="text-xs text-muted-foreground">IoT Tích hợp</span>
           </div>
         </div>
-        
+
         <NavContent collapsed={false} onItemClick={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
@@ -86,19 +85,21 @@ export function MobileSidebar() {
 }
 
 // Desktop Sidebar
+import { useSidebar } from '@/contexts/SidebarContext';
+
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggleCollapsed } = useSidebar();
 
   return (
     <>
       {/* Mobile Sidebar */}
       <MobileSidebar />
-      
+
       {/* Desktop Sidebar */}
       <aside
         className={cn(
           'hidden lg:flex fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex-col',
-          collapsed ? 'w-16' : 'w-64'
+          collapsed ? 'w-18' : 'w-64'
         )}
       >
         {/* Logo */}
@@ -119,7 +120,7 @@ export function Sidebar() {
         {/* Collapse Button */}
         <div className="p-3 border-t border-sidebar-border">
           <button
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={toggleCollapsed}
             className={cn(
               'flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm',
               'text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors',

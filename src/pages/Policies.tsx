@@ -1,18 +1,14 @@
-import { useState } from 'react';
-import { Clock, Activity, Plus, Settings, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Clock, Activity, Plus, Settings, AlertTriangle, Trash } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Modal, Form, Input as AntInput, Select as AntSelect, Switch as AntSwitch } from 'antd';
+
+
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockTBMPolicies, mockCBMPolicies, mockAssets } from '@/data/mockData';
 import { TBMPolicy, CBMPolicy, MetricType } from '@/types/maintenance';
@@ -21,7 +17,36 @@ import { cn } from '@/lib/utils';
 export default function Policies() {
   const [tbmPolicies, setTBMPolicies] = useState<TBMPolicy[]>(mockTBMPolicies);
   const [cbmPolicies, setCBMPolicies] = useState<CBMPolicy[]>(mockCBMPolicies);
-  const [selectedAsset, setSelectedAsset] = useState<string>('');
+
+  // Dialog / Form state for TBM (Antd Form)
+  const [isTBMDialogOpen, setTBMDialogOpen] = useState(false);
+  const [editingTBM, setEditingTBM] = useState<TBMPolicy | null>(null);
+  const [tbmForm] = Form.useForm();
+
+  // Dialog / Form state for CBM (Antd Form)
+  const [isCBMDialogOpen, setCBMDialogOpen] = useState(false);
+  const [editingCBM, setEditingCBM] = useState<CBMPolicy | null>(null);
+  const [cbmForm] = Form.useForm();
+
+  // persist policies in localStorage
+  useEffect(() => {
+    const rawTBM = localStorage.getItem('tbmPolicies');
+    const rawCBM = localStorage.getItem('cbmPolicies');
+    if (rawTBM) {
+      try { setTBMPolicies(JSON.parse(rawTBM)); } catch (e) { console.warn('Failed to parse tbmPolicies from localStorage', e); }
+    }
+    if (rawCBM) {
+      try { setCBMPolicies(JSON.parse(rawCBM)); } catch (e) { console.warn('Failed to parse cbmPolicies from localStorage', e); }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tbmPolicies', JSON.stringify(tbmPolicies));
+  }, [tbmPolicies]);
+
+  useEffect(() => {
+    localStorage.setItem('cbmPolicies', JSON.stringify(cbmPolicies));
+  }, [cbmPolicies]);
 
   const toggleTBMPolicy = (id: string) => {
     setTBMPolicies(policies =>
@@ -35,16 +60,96 @@ export default function Policies() {
     );
   };
 
+
+
+  const openCreateTBM = () => { tbmForm.resetFields(); setEditingTBM(null); setTBMDialogOpen(true); };
+  const openEditTBM = (p: TBMPolicy) => {
+    setEditingTBM(p);
+    tbmForm.setFieldsValue({ assetId: p.assetId, intervalDays: p.intervalDays, nextDueDate: p.nextDueDate ? p.nextDueDate.split('T')[0] : '', checklist: (p.checklistTemplate || []).join(', ') });
+    setTBMDialogOpen(true);
+  };
+
+  const saveTBM = async () => {
+    try {
+      const values = await tbmForm.validateFields();
+      const checklistArr = values.checklist ? String(values.checklist).split(',').map((s: string) => s.trim()) : undefined;
+
+      if (editingTBM) {
+        setTBMPolicies(prev => prev.map(p => p.id === editingTBM.id ? { ...p, assetId: values.assetId, intervalDays: Number(values.intervalDays), nextDueDate: values.nextDueDate || p.nextDueDate, checklistTemplate: checklistArr } : p));
+      } else {
+        const newPolicy: TBMPolicy = {
+          id: `TBM-${Date.now().toString(36)}`,
+          assetId: values.assetId || mockAssets[0].id,
+          intervalDays: Number(values.intervalDays),
+          nextDueDate: values.nextDueDate || new Date().toISOString(),
+          // set lastExecuted to now so the UI shows "Thực hiện lần cuối" immediately after creation
+          lastExecuted: new Date().toISOString(),
+          isActive: true,
+          checklistTemplate: checklistArr,
+        };
+        setTBMPolicies(prev => [newPolicy, ...prev]);
+      }
+
+      setTBMDialogOpen(false);
+      tbmForm.resetFields();
+    } catch (err) {
+      console.warn('TBM save failed', err);
+    }
+  };
+
+  const deleteTBM = (id: string) => {
+    setTBMPolicies(prev => prev.filter(p => p.id !== id));
+  };
+
+  const openCreateCBM = () => { cbmForm.resetFields(); setEditingCBM(null); setCBMDialogOpen(true); };
+  const openEditCBM = (p: CBMPolicy) => {
+    setEditingCBM(p);
+    cbmForm.setFieldsValue({ assetId: p.assetId, metric: p.metric, threshold: p.threshold, operator: p.operator, durationMinutes: p.durationMinutes, priority: p.priority, overrideTBM: p.overrideTBM });
+    setCBMDialogOpen(true);
+  };
+
+  const saveCBM = async () => {
+    try {
+      const values = await cbmForm.validateFields();
+
+      if (editingCBM) {
+        setCBMPolicies(prev => prev.map(p => p.id === editingCBM.id ? { ...p, assetId: values.assetId, metric: values.metric, threshold: Number(values.threshold), operator: values.operator, durationMinutes: Number(values.durationMinutes), priority: Number(values.priority), overrideTBM: Boolean(values.overrideTBM) } : p));
+      } else {
+        const newPolicy: CBMPolicy = {
+          id: `CBM-${Date.now().toString(36)}`,
+          assetId: values.assetId || mockAssets[0].id,
+          metric: values.metric,
+          threshold: Number(values.threshold),
+          operator: values.operator,
+          durationMinutes: Number(values.durationMinutes),
+          priority: Number(values.priority),
+          isActive: true,
+          overrideTBM: Boolean(values.overrideTBM),
+        };
+        setCBMPolicies(prev => [newPolicy, ...prev]);
+      }
+
+      setCBMDialogOpen(false);
+      cbmForm.resetFields();
+    } catch (err) {
+      console.warn('CBM save failed', err);
+    }
+  };
+
+  const deleteCBM = (id: string) => {
+    setCBMPolicies(prev => prev.filter(p => p.id !== id));
+  };
+
   const getAssetName = (assetId: string) => {
     return mockAssets.find(a => a.id === assetId)?.name || assetId;
   };
 
   const metricLabels: Record<MetricType, string> = {
-    temperature: 'Temperature (°C)',
-    current: 'Current (A)',
-    pressure: 'Pressure (bar)',
-    vibration: 'Vibration (mm/s)',
-    humidity: 'Humidity (%)',
+    temperature: 'Nhiệt độ (°C)',
+    current: 'Dòng điện (A)',
+    pressure: 'Áp suất (bar)',
+    vibration: 'Rung động (mm/s)',
+    humidity: 'Độ ẩm (%)',
   };
 
   const operatorLabels = {
@@ -59,9 +164,9 @@ export default function Policies() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Policy Configuration</h1>
+          <span className="text-2xl font-bold">Cấu hình chính sách</span>
           <p className="text-muted-foreground">
-            Configure TBM schedules and CBM threshold rules
+            Cấu hình lịch TBM và quy tắc ngưỡng CBM
           </p>
         </div>
       </div>
@@ -70,11 +175,11 @@ export default function Policies() {
         <TabsList className="bg-muted/50">
           <TabsTrigger value="tbm" className="gap-2">
             <Clock className="w-4 h-4" />
-            TBM Policies
+            Chính sách TBM
           </TabsTrigger>
           <TabsTrigger value="cbm" className="gap-2">
             <Activity className="w-4 h-4" />
-            CBM Rules
+            Quy tắc CBM
           </TabsTrigger>
         </TabsList>
 
@@ -87,15 +192,15 @@ export default function Policies() {
                   <Clock className="w-5 h-5 text-info" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Time-Based Maintenance</h2>
+                  <span className="text-lg font-semibold">Bảo trì theo thời gian</span>
                   <p className="text-sm text-muted-foreground">
-                    Schedule recurring maintenance tasks
+                    Lên lịch công việc bảo trì định kỳ
                   </p>
                 </div>
               </div>
-              <Button>
+              <Button onClick={openCreateTBM}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add TBM Policy
+                Thêm chính sách TBM
               </Button>
             </div>
 
@@ -105,8 +210,8 @@ export default function Policies() {
                   key={policy.id}
                   className={cn(
                     'p-4 rounded-xl border transition-all',
-                    policy.isActive 
-                      ? 'bg-card border-info/30' 
+                    policy.isActive
+                      ? 'bg-card border-info/30'
                       : 'bg-muted/30 border-border opacity-60'
                   )}
                 >
@@ -117,31 +222,31 @@ export default function Policies() {
                           {policy.id}
                         </span>
                         <Badge variant="outline" className={cn(
-                          policy.isActive 
+                          policy.isActive
                             ? 'bg-success/10 text-success border-success/30'
                             : 'bg-muted text-muted-foreground'
                         )}>
-                          {policy.isActive ? 'Active' : 'Inactive'}
+                          {policy.isActive ? 'Đang hoạt động' : 'Không hoạt động'}
                         </Badge>
                       </div>
                       <h3 className="font-semibold mb-1">{getAssetName(policy.assetId)}</h3>
-                      
+
                       <div className="grid grid-cols-3 gap-4 mt-4">
                         <div>
-                          <Label className="text-xs text-muted-foreground">Interval</Label>
-                          <p className="font-mono text-lg">{policy.intervalDays} days</p>
+                          <Label className="text-xs text-muted-foreground">Chu kỳ (ngày)</Label>
+                          <p className="font-mono text-lg">{policy.intervalDays} ngày</p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Last Executed</Label>
+                          <Label className="text-xs text-muted-foreground">Thực hiện lần cuối</Label>
                           <p className="font-mono">
-                            {policy.lastExecuted 
+                            {policy.lastExecuted
                               ? new Date(policy.lastExecuted).toLocaleDateString('vi-VN')
                               : '-'
                             }
                           </p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Next Due</Label>
+                          <Label className="text-xs text-muted-foreground">Hạn tiếp theo</Label>
                           <p className="font-mono text-info">
                             {new Date(policy.nextDueDate).toLocaleDateString('vi-VN')}
                           </p>
@@ -151,17 +256,17 @@ export default function Policies() {
                       {policy.checklistTemplate && (
                         <div className="mt-4 pt-4 border-t border-border/50">
                           <Label className="text-xs text-muted-foreground mb-2 block">
-                            Checklist Template ({policy.checklistTemplate.length} items)
+                            Mẫu checklist ({policy.checklistTemplate.length} mục)
                           </Label>
                           <div className="flex flex-wrap gap-2">
                             {policy.checklistTemplate.slice(0, 3).map((item, idx) => (
-                              <Badge key={idx} variant="secondary" className="font-normal">
+                              <Badge key={`${policy.id}-${item}-${idx}`} variant="secondary" className="font-normal">
                                 {item}
                               </Badge>
                             ))}
                             {policy.checklistTemplate.length > 3 && (
                               <Badge variant="outline">
-                                +{policy.checklistTemplate.length - 3} more
+                                +{policy.checklistTemplate.length - 3} khác
                               </Badge>
                             )}
                           </div>
@@ -169,9 +274,12 @@ export default function Policies() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <Button variant="ghost" size="icon">
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => openEditTBM(policy)}>
                         <Settings className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => { if (confirm('Xóa chính sách TBM này?')) deleteTBM(policy.id); }}>
+                        <Trash className="w-4 h-4 text-destructive" />
                       </Button>
                       <Switch
                         checked={policy.isActive}
@@ -194,15 +302,15 @@ export default function Policies() {
                   <Activity className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Condition-Based Maintenance</h2>
+                  <h2 className="text-lg font-semibold">Bảo trì theo điều kiện</h2>
                   <p className="text-sm text-muted-foreground">
-                    Trigger maintenance based on sensor thresholds
+                    Kích hoạt bảo trì dựa trên ngưỡng cảm biến
                   </p>
                 </div>
               </div>
-              <Button>
+              <Button onClick={openCreateCBM}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add CBM Rule
+                Thêm quy tắc CBM
               </Button>
             </div>
 
@@ -212,8 +320,8 @@ export default function Policies() {
                   key={policy.id}
                   className={cn(
                     'p-4 rounded-xl border transition-all',
-                    policy.isActive 
-                      ? 'bg-card border-primary/30' 
+                    policy.isActive
+                      ? 'bg-card border-primary/30'
                       : 'bg-muted/30 border-border opacity-60'
                   )}
                 >
@@ -224,37 +332,37 @@ export default function Policies() {
                           {policy.id}
                         </span>
                         <Badge variant="outline" className={cn(
-                          policy.isActive 
+                          policy.isActive
                             ? 'bg-success/10 text-success border-success/30'
                             : 'bg-muted text-muted-foreground'
                         )}>
-                          {policy.isActive ? 'Active' : 'Inactive'}
+                          {policy.isActive ? 'Đang hoạt động' : 'Không hoạt động'}
                         </Badge>
                         {policy.overrideTBM && (
                           <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
-                            Override TBM
+                            Ghi đè TBM
                           </Badge>
                         )}
                       </div>
                       <h3 className="font-semibold mb-1">{getAssetName(policy.assetId)}</h3>
-                      
+
                       <div className="grid grid-cols-4 gap-4 mt-4">
                         <div>
-                          <Label className="text-xs text-muted-foreground">Metric</Label>
-                          <p className="font-medium capitalize">{policy.metric}</p>
+                          <Label className="text-xs text-muted-foreground">Thông số</Label>
+                          <p className="font-medium">{metricLabels[policy.metric]}</p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Condition</Label>
+                          <Label className="text-xs text-muted-foreground">Điều kiện</Label>
                           <p className="font-mono text-lg">
                             {operatorLabels[policy.operator]} {policy.threshold}
                           </p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Duration</Label>
-                          <p className="font-mono">{policy.durationMinutes} min</p>
+                          <Label className="text-xs text-muted-foreground">Thời lượng</Label>
+                          <p className="font-mono">{policy.durationMinutes} phút</p>
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Priority</Label>
+                          <Label className="text-xs text-muted-foreground">Mức ưu tiên</Label>
                           <p className={cn(
                             'font-medium',
                             policy.priority === 1 && 'text-destructive',
@@ -266,21 +374,24 @@ export default function Policies() {
                         </div>
                       </div>
 
-                      {/* Visual Rule */}
+                      {/* Quy tắc trực quan */}
                       <div className="mt-4 p-3 rounded-lg bg-muted/30 font-mono text-sm">
-                        <span className="text-muted-foreground">WHEN</span>{' '}
-                        <span className="text-primary">{policy.metric}</span>{' '}
+                        <span className="text-muted-foreground">KHI</span>{' '}
+                        <span className="text-primary">{metricLabels[policy.metric]}</span>{' '}
                         <span className="text-warning">{operatorLabels[policy.operator]} {policy.threshold}</span>{' '}
-                        <span className="text-muted-foreground">FOR</span>{' '}
-                        <span className="text-info">{policy.durationMinutes} min</span>{' '}
+                        <span className="text-muted-foreground">TRONG</span>{' '}
+                        <span className="text-info">{policy.durationMinutes} phút</span>{' '}
                         <span className="text-muted-foreground">→</span>{' '}
-                        <span className="text-success">CREATE WO</span>
+                        <span className="text-success">TẠO LỆNH</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <Button variant="ghost" size="icon">
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => openEditCBM(policy)}>
                         <Settings className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => { if (confirm('Xóa quy tắc CBM này?')) deleteCBM(policy.id); }}>
+                        <Trash className="w-4 h-4 text-destructive" />
                       </Button>
                       <Switch
                         checked={policy.isActive}
@@ -298,17 +409,110 @@ export default function Policies() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
               <div>
-                <h4 className="font-semibold mb-1">CBM Override Priority</h4>
+                <h4 className="font-semibold mb-1">Ưu tiên ghi đè CBM</h4>
                 <p className="text-sm text-muted-foreground">
-                  When "Override TBM" is enabled, CBM-triggered work orders will take precedence 
-                  over scheduled TBM maintenance. This ensures critical conditions are addressed 
-                  immediately.
+                  Khi "Ghi đè TBM" được bật, các lệnh công việc kích hoạt bởi CBM sẽ được ưu tiên
+                  hơn so với bảo trì TBM đã lên lịch. Điều này đảm bảo các điều kiện nghiêm trọng được xử lý
+                  ngay lập tức.
                 </p>
               </div>
             </div>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* TBM Modal (Ant Design) */}
+      <Modal
+        title={editingTBM ? 'Chỉnh sửa TBM' : 'Thêm TBM'}
+        open={isTBMDialogOpen}
+        onCancel={() => setTBMDialogOpen(false)}
+        footer={[
+          <Button key="cancel" variant="ghost" onClick={() => setTBMDialogOpen(false)}>Hủy</Button>,
+          <Button key="save" onClick={saveTBM}>{editingTBM ? 'Lưu' : 'Tạo'}</Button>
+        ]}
+      >
+        <Form form={tbmForm} layout="vertical" initialValues={{ intervalDays: 30 }}>
+          <Form.Item name="assetId" label="Thiết bị" rules={[{ required: true, message: 'Chọn thiết bị' }]}>
+            <AntSelect placeholder="Chọn thiết bị">
+              {mockAssets.map(a => (
+                <AntSelect.Option key={a.id} value={a.id}>{a.name}</AntSelect.Option>
+              ))}
+            </AntSelect>
+          </Form.Item>
+
+          <Form.Item name="intervalDays" label="Chu kỳ (ngày)" rules={[{ required: true }]}>
+            <AntInput type="number" />
+          </Form.Item>
+
+          <Form.Item name="nextDueDate" label="Hạn tiếp theo">
+            <AntInput type="date" />
+          </Form.Item>
+
+          <Form.Item name="checklist" label="Mẫu checklist (ngăn cách bằng ,)">
+            <AntInput.TextArea rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* CBM Modal (Ant Design) */}
+      <Modal
+        title={editingCBM ? 'Chỉnh sửa CBM' : 'Thêm CBM'}
+        open={isCBMDialogOpen}
+        onCancel={() => setCBMDialogOpen(false)}
+        footer={[
+          <Button key="cancel" variant="ghost" onClick={() => setCBMDialogOpen(false)}>Hủy</Button>,
+          <Button key="save" onClick={saveCBM}>{editingCBM ? 'Lưu' : 'Tạo'}</Button>
+        ]}
+      >
+        <Form form={cbmForm} layout="vertical" initialValues={{ metric: 'temperature', operator: 'gt', durationMinutes: 5, priority: 3 }}>
+          <Form.Item name="assetId" label="Thiết bị" rules={[{ required: true, message: 'Chọn thiết bị' }]}>
+            <AntSelect placeholder="Chọn thiết bị">
+              {mockAssets.map(a => (
+                <AntSelect.Option key={a.id} value={a.id}>{a.name}</AntSelect.Option>
+              ))}
+            </AntSelect>
+          </Form.Item>
+
+          <Form.Item name="metric" label="Thông số" rules={[{ required: true }]}>
+            <AntSelect>
+              {Object.entries(metricLabels).map(([k, label]) => (
+                <AntSelect.Option key={k} value={k}>{label}</AntSelect.Option>
+              ))}
+            </AntSelect>
+          </Form.Item>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Form.Item name="operator" label="Điều kiện" rules={[{ required: true }]}>
+              <AntSelect>
+                <AntSelect.Option value="gt">&gt;</AntSelect.Option>
+                <AntSelect.Option value="lt">&lt;</AntSelect.Option>
+                <AntSelect.Option value="gte">≥</AntSelect.Option>
+                <AntSelect.Option value="lte">≤</AntSelect.Option>
+              </AntSelect>
+            </Form.Item>
+            <Form.Item name="threshold" label="Ngưỡng" rules={[{ required: true }]}>
+              <AntInput type="number" />
+            </Form.Item>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Form.Item name="durationMinutes" label="Thời lượng (phút)" rules={[{ required: true }]}>
+              <AntInput type="number" />
+            </Form.Item>
+            <Form.Item name="priority" label="Ưu tiên" rules={[{ required: true }]}>
+              <AntSelect>
+                <AntSelect.Option value={1}>P1</AntSelect.Option>
+                <AntSelect.Option value={2}>P2</AntSelect.Option>
+                <AntSelect.Option value={3}>P3</AntSelect.Option>
+              </AntSelect>
+            </Form.Item>
+          </div>
+
+          <Form.Item name="overrideTBM" valuePropName="checked">
+            <AntSwitch /> Ghi đè TBM
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

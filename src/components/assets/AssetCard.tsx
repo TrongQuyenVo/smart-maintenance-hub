@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Asset } from '@/types/maintenance';
 import { AssetStatusIndicator } from './AssetStatusIndicator';
-import { cn } from '@/lib/utils';
+import { cn, getAssetTypeLabel } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
 interface AssetCardProps {
@@ -63,14 +63,14 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
         {asset.nextMaintenance && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
-            <span>Next: {new Date(asset.nextMaintenance).toLocaleDateString('vi-VN')}</span>
+            <span>Bảo trì tiếp theo: {new Date(asset.nextMaintenance).toLocaleDateString('vi-VN')}</span>
           </div>
         )}
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-border/50">
         <Badge variant="outline" className={cn(typeColors[asset.type])}>
-          {asset.type}
+          {getAssetTypeLabel(asset.type)}
         </Badge>
         {asset.manufacturer && (
           <span className="text-xs text-muted-foreground">

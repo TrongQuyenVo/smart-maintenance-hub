@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { 
+import { Modal, Form, Input as AntInput, Select as AntSelect } from 'antd';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -12,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { WOStatusBadge } from '@/components/workorder/WOStatusBadge';
 import { WOSourceBadge } from '@/components/workorder/WOSourceBadge';
-import { mockWorkOrders } from '@/data/mockData';
+import { mockWorkOrders, mockAssets } from '@/data/mockData';
 import { WOSource, WOStatus } from '@/types/maintenance';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -23,12 +24,28 @@ export default function WorkOrders() {
   const [sourceFilter, setSourceFilter] = useState<WOSource | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<WOStatus | 'all'>('all');
 
-  const filteredOrders = mockWorkOrders.filter(wo => {
-    const matchesSearch = 
+  // Work orders state (persisted to localStorage)
+  const [workOrders, setWorkOrders] = useState(mockWorkOrders);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createForm] = Form.useForm();
+
+  useEffect(() => {
+    const raw = localStorage.getItem('workOrders');
+    if (raw) {
+      try { setWorkOrders(JSON.parse(raw)); } catch (e) { console.warn('Failed to parse workOrders from localStorage', e); }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('workOrders', JSON.stringify(workOrders));
+  }, [workOrders]);
+
+  const filteredOrders = workOrders.filter(wo => {
+    const matchesSearch =
       wo.title.toLowerCase().includes(search.toLowerCase()) ||
       wo.id.toLowerCase().includes(search.toLowerCase()) ||
       wo.assetName.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesSource = sourceFilter === 'all' || wo.source === sourceFilter;
     const matchesStatus = statusFilter === 'all' || wo.status === statusFilter;
 
@@ -50,7 +67,7 @@ export default function WorkOrders() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -58,16 +75,97 @@ export default function WorkOrders() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Lệnh công việc</h1>
+          <span className="text-xl sm:text-2xl font-bold">Lệnh công việc</span>
           <p className="text-sm sm:text-base text-muted-foreground">
             Quản lý và theo dõi các lệnh bảo trì
           </p>
         </div>
-        <Button className="w-full sm:w-auto">
+        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Tạo lệnh mới
         </Button>
       </div>
+
+      {/* Create Work Order Modal */}
+      <Modal
+        title="Tạo lệnh công việc mới"
+        open={isCreateOpen}
+        onCancel={() => setIsCreateOpen(false)}
+        footer={[
+          <Button key="cancel" variant="ghost" onClick={() => setIsCreateOpen(false)}>Hủy</Button>,
+          <Button key="save" onClick={async () => {
+            try {
+              const values = await createForm.validateFields();
+              const asset = mockAssets.find(a => a.id === values.assetId);
+              const newWO = {
+                id: `WO-${Date.now().toString(36)}`,
+                title: values.title,
+                assetId: values.assetId,
+                assetName: asset ? asset.name : values.assetId,
+                source: values.source,
+                status: 'open' as WOStatus,
+                priority: values.priority,
+                createdAt: new Date().toISOString(),
+                dueDate: values.dueDate || new Date().toISOString(),
+                assignee: values.assignee || '',
+                checklist: [],
+                notes: values.notes || '',
+              };
+              setWorkOrders(prev => [newWO, ...prev]);
+              createForm.resetFields();
+              setIsCreateOpen(false);
+            } catch (err) {
+              console.warn('Create WO failed', err);
+            }
+          }}>Tạo</Button>
+        ]}
+      >
+        <Form form={createForm} layout="vertical" initialValues={{ source: 'Manual', priority: 'medium' }}>
+          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}>
+            <AntInput />
+          </Form.Item>
+
+          <Form.Item name="assetId" label="Thiết bị" rules={[{ required: true, message: 'Chọn thiết bị' }]}>
+            <AntSelect placeholder="Chọn thiết bị">
+              {mockAssets.map(a => (
+                <AntSelect.Option key={a.id} value={a.id}>{a.name}</AntSelect.Option>
+              ))}
+            </AntSelect>
+          </Form.Item>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Form.Item name="source" label="Nguồn" rules={[{ required: true }]}>
+              <AntSelect>
+                <AntSelect.Option value="TBM">TBM</AntSelect.Option>
+                <AntSelect.Option value="CBM">CBM</AntSelect.Option>
+                <AntSelect.Option value="Manual">Thủ công</AntSelect.Option>
+              </AntSelect>
+            </Form.Item>
+            <Form.Item name="priority" label="Ưu tiên" rules={[{ required: true }]}>
+              <AntSelect>
+                <AntSelect.Option value="low">Thấp</AntSelect.Option>
+                <AntSelect.Option value="medium">Trung bình</AntSelect.Option>
+                <AntSelect.Option value="high">Cao</AntSelect.Option>
+                <AntSelect.Option value="critical">Khẩn cấp</AntSelect.Option>
+              </AntSelect>
+            </Form.Item>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Form.Item name="dueDate" label="Hạn">
+              <AntInput type="date" />
+            </Form.Item>
+
+            <Form.Item name="assignee" label="Người thực hiện">
+              <AntInput />
+            </Form.Item>
+          </div>
+
+          <Form.Item name="notes" label="Ghi chú">
+            <AntInput.TextArea rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">

@@ -33,10 +33,10 @@ export function HotAlertsList() {
       <div className="flex items-center justify-between p-4 border-b border-border/50">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-warning" />
-          <h3 className="text-lg font-semibold">Critical Alerts</h3>
+          <h3 className="text-lg font-semibold">Cảnh báo nghiêm trọng</h3>
         </div>
         <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
-          {activeAlerts.length} Active
+          {activeAlerts.length} Hoạt động
         </Badge>
       </div>
 
@@ -98,7 +98,7 @@ export function HotAlertsList() {
       {activeAlerts.length === 0 && (
         <div className="p-8 text-center text-muted-foreground">
           <Activity className="w-10 h-10 mx-auto mb-2 opacity-50" />
-          <p>No active alerts</p>
+          <p>Không có cảnh báo đang hoạt động</p>
         </div>
       )}
     </div>

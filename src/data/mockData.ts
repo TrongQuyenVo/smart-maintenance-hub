@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { 
   Asset, 
   WorkOrder, 
@@ -11,14 +12,14 @@ import {
 export const mockAssets: Asset[] = [
   {
     id: 'AST-001',
-    name: 'AHU-01 Main Building',
+    name: 'AHU-01 Tòa nhà chính',
     type: 'AHU',
-    location: 'Building A - Floor 1',
+    location: 'Tòa nhà A - Tầng 1',
     status: 'online',
     specifications: {
-      'Cooling Capacity': '50 kW',
-      'Air Flow': '8000 CFM',
-      'Power': '15 kW',
+      'Công suất làm lạnh': '50 kW',
+      'Lưu lượng khí': '8000 CFM',
+      'Công suất tiêu thụ': '15 kW',
     },
     lastMaintenance: '2024-12-15',
     nextMaintenance: '2025-03-15',
@@ -28,14 +29,14 @@ export const mockAssets: Asset[] = [
   },
   {
     id: 'AST-002',
-    name: 'Chiller-01 Central',
+    name: 'Chiller-01 Trung tâm',
     type: 'Chiller',
-    location: 'Rooftop',
+    location: 'Mái tòa nhà',
     status: 'warning',
     specifications: {
-      'Capacity': '500 TR',
-      'Refrigerant': 'R-134a',
-      'Power': '350 kW',
+      'Công suất': '500 TR',
+      'Chất làm lạnh': 'R-134a',
+      'Công suất tiêu thụ': '350 kW',
     },
     lastMaintenance: '2024-11-20',
     nextMaintenance: '2025-02-20',
@@ -45,14 +46,14 @@ export const mockAssets: Asset[] = [
   },
   {
     id: 'AST-003',
-    name: 'FCU-101 Office Zone',
+    name: 'FCU-101 Khu văn phòng',
     type: 'FCU',
-    location: 'Building A - Floor 10',
+    location: 'Tòa nhà A - Tầng 10',
     status: 'online',
     specifications: {
-      'Capacity': '5 kW',
-      'Air Flow': '800 CFM',
-      'Power': '0.5 kW',
+      'Công suất': '5 kW',
+      'Lưu lượng khí': '800 CFM',
+      'Công suất tiêu thụ': '0.5 kW',
     },
     lastMaintenance: '2024-12-01',
     nextMaintenance: '2025-03-01',
@@ -62,14 +63,14 @@ export const mockAssets: Asset[] = [
   },
   {
     id: 'AST-004',
-    name: 'Pump-CW-01',
+    name: 'Bơm CW-01',
     type: 'Pump',
-    location: 'Basement - Pump Room',
+    location: 'Tầng hầm - Phòng bơm',
     status: 'critical',
     specifications: {
-      'Flow Rate': '200 m³/h',
-      'Head': '25 m',
-      'Power': '22 kW',
+      'Lưu lượng': '200 m³/h',
+      'Cột áp': '25 m',
+      'Công suất': '22 kW',
     },
     lastMaintenance: '2024-10-05',
     nextMaintenance: '2025-01-05',
@@ -79,14 +80,14 @@ export const mockAssets: Asset[] = [
   },
   {
     id: 'AST-005',
-    name: 'Compressor-01',
+    name: 'Máy nén-01',
     type: 'Compressor',
-    location: 'Utility Building',
+    location: 'Tòa nhà phụ trợ',
     status: 'online',
     specifications: {
-      'Capacity': '100 CFM',
-      'Pressure': '8 bar',
-      'Power': '18.5 kW',
+      'Công suất': '100 CFM',
+      'Áp suất': '8 bar',
+      'Công suất tiêu thụ': '18.5 kW',
     },
     lastMaintenance: '2024-12-20',
     nextMaintenance: '2025-03-20',
@@ -99,9 +100,9 @@ export const mockAssets: Asset[] = [
 export const mockWorkOrders: WorkOrder[] = [
   {
     id: 'WO-2025-001',
-    title: 'Quarterly Maintenance - AHU-01',
+    title: 'Bảo trì hàng quý - AHU-01',
     assetId: 'AST-001',
-    assetName: 'AHU-01 Main Building',
+    assetName: 'AHU-01 Tòa nhà chính',
     source: 'TBM',
     status: 'in_progress',
     priority: 'medium',
@@ -118,9 +119,9 @@ export const mockWorkOrders: WorkOrder[] = [
   },
   {
     id: 'WO-2025-002',
-    title: 'CBM Alert: High Temperature - Chiller-01',
+    title: 'Cảnh báo CBM: Nhiệt độ cao - Chiller-01',
     assetId: 'AST-002',
-    assetName: 'Chiller-01 Central',
+    assetName: 'Chiller-01 Trung tâm',
     source: 'CBM',
     status: 'open',
     priority: 'high',
@@ -140,9 +141,9 @@ export const mockWorkOrders: WorkOrder[] = [
   },
   {
     id: 'WO-2025-003',
-    title: 'Emergency Repair - Pump-CW-01',
+    title: 'Sửa chữa khẩn cấp - Bơm CW-01',
     assetId: 'AST-004',
-    assetName: 'Pump-CW-01',
+    assetName: 'Bơm CW-01',
     source: 'Manual',
     status: 'overdue',
     priority: 'critical',
@@ -158,9 +159,9 @@ export const mockWorkOrders: WorkOrder[] = [
   },
   {
     id: 'WO-2025-004',
-    title: 'Monthly Check - FCU-101',
+    title: 'Kiểm tra hàng tháng - FCU-101',
     assetId: 'AST-003',
-    assetName: 'FCU-101 Office Zone',
+    assetName: 'FCU-101 Khu văn phòng',
     source: 'TBM',
     status: 'done',
     priority: 'low',
@@ -176,9 +177,9 @@ export const mockWorkOrders: WorkOrder[] = [
   },
   {
     id: 'WO-2025-005',
-    title: 'CBM Alert: High Current - Compressor-01',
+    title: 'Cảnh báo CBM: Dòng điện cao - Máy nén-01',
     assetId: 'AST-005',
-    assetName: 'Compressor-01',
+    assetName: 'Máy nén-01',
     source: 'CBM',
     status: 'open',
     priority: 'medium',
@@ -202,7 +203,7 @@ export const mockAlerts: Alert[] = [
   {
     id: 'ALT-001',
     assetId: 'AST-002',
-    assetName: 'Chiller-01 Central',
+    assetName: 'Chiller-01 Trung tâm',
     metric: 'temperature',
     value: 45.5,
     threshold: 40,
@@ -213,7 +214,7 @@ export const mockAlerts: Alert[] = [
   {
     id: 'ALT-002',
     assetId: 'AST-004',
-    assetName: 'Pump-CW-01',
+    assetName: 'Bơm CW-01',
     metric: 'vibration',
     value: 8.5,
     threshold: 5,
@@ -224,7 +225,7 @@ export const mockAlerts: Alert[] = [
   {
     id: 'ALT-003',
     assetId: 'AST-005',
-    assetName: 'Compressor-01',
+    assetName: 'Máy nén-01',
     metric: 'current',
     value: 42,
     threshold: 38,
@@ -235,7 +236,7 @@ export const mockAlerts: Alert[] = [
   {
     id: 'ALT-004',
     assetId: 'AST-001',
-    assetName: 'AHU-01 Main Building',
+    assetName: 'AHU-01 Tòa nhà chính',
     metric: 'pressure',
     value: 2.8,
     threshold: 3,
@@ -374,10 +375,10 @@ export const mockDashboardStats: DashboardStats = {
 };
 
 export const calendarEvents = [
-  { date: '2025-01-10', title: 'AHU-01 Quarterly', type: 'TBM' as const },
-  { date: '2025-01-15', title: 'Chiller-01 Check', type: 'TBM' as const },
-  { date: '2025-01-20', title: 'FCU Zone A', type: 'TBM' as const },
-  { date: '2025-01-25', title: 'Pump System', type: 'TBM' as const },
-  { date: '2025-02-01', title: 'FCU-101 Monthly', type: 'TBM' as const },
-  { date: '2025-02-20', title: 'Chiller-01 Quarterly', type: 'TBM' as const },
+  { date: '2025-01-10', title: 'AHU-01 Bảo trì hàng quý', type: 'TBM' as const },
+  { date: '2025-01-15', title: 'Kiểm tra Chiller-01', type: 'TBM' as const },
+  { date: '2025-01-20', title: 'FCU Khu A', type: 'TBM' as const },
+  { date: '2025-01-25', title: 'Hệ thống bơm', type: 'TBM' as const },
+  { date: '2025-02-01', title: 'FCU-101 Kiểm tra hàng tháng', type: 'TBM' as const },
+  { date: '2025-02-20', title: 'Chiller-01 Bảo trì hàng quý', type: 'TBM' as const },
 ];

@@ -8,8 +8,8 @@ interface WOSourceBadgeProps {
   className?: string;
 }
 
-const sourceConfig: Record<WOSource, { 
-  label: string; 
+const sourceConfig: Record<WOSource, {
+  label: string;
   className: string;
   icon: React.ElementType;
 }> = {
@@ -24,7 +24,7 @@ const sourceConfig: Record<WOSource, {
     icon: Activity,
   },
   Manual: {
-    label: 'Manual',
+    label: 'Thủ công',
     className: 'bg-muted text-muted-foreground border-border',
     icon: Hand,
   },
