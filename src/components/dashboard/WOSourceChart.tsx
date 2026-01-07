@@ -4,22 +4,22 @@ import { mockDashboardStats } from '@/data/mockData';
 const data = [
   { name: 'TBM', value: mockDashboardStats.tbmCount, color: 'hsl(200, 85%, 55%)' },
   { name: 'CBM', value: mockDashboardStats.cbmCount, color: 'hsl(175, 80%, 50%)' },
-  { name: 'Manual', value: mockDashboardStats.manualCount, color: 'hsl(35, 95%, 55%)' },
+  { name: 'Thủ công', value: mockDashboardStats.manualCount, color: 'hsl(35, 95%, 55%)' },
 ];
 
 export function WOSourceChart() {
   return (
     <div className="glass-card rounded-xl p-4">
-      <h3 className="text-lg font-semibold mb-4">Work Orders by Source</h3>
-      <div className="h-[250px]">
+      <h3 className="text-base sm:text-lg font-semibold mb-4">Lệnh công việc theo nguồn</h3>
+      <div className="h-[200px] sm:h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius={60}
-              outerRadius={90}
+              innerRadius={40}
+              outerRadius={70}
               paddingAngle={5}
               dataKey="value"
               stroke="none"
@@ -30,17 +30,17 @@ export function WOSourceChart() {
             </Pie>
             <Tooltip
               contentStyle={{
-                backgroundColor: 'hsl(220, 18%, 13%)',
-                border: '1px solid hsl(220, 15%, 22%)',
+                backgroundColor: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
-                color: 'hsl(210, 20%, 95%)',
+                color: 'hsl(var(--foreground))',
               }}
             />
             <Legend
               verticalAlign="bottom"
               height={36}
               formatter={(value) => (
-                <span className="text-sm text-foreground">{value}</span>
+                <span className="text-xs sm:text-sm text-foreground">{value}</span>
               )}
             />
           </PieChart>
@@ -49,10 +49,10 @@ export function WOSourceChart() {
       <div className="grid grid-cols-3 gap-2 mt-4">
         {data.map((item) => (
           <div key={item.name} className="text-center p-2 rounded-lg bg-muted/30">
-            <p className="text-2xl font-bold" style={{ color: item.color }}>
+            <p className="text-xl sm:text-2xl font-bold" style={{ color: item.color }}>
               {item.value}
             </p>
-            <p className="text-xs text-muted-foreground">{item.name}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">{item.name}</p>
           </div>
         ))}
       </div>

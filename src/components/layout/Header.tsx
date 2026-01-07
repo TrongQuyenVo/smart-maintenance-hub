@@ -1,4 +1,4 @@
-import { Bell, Search, User, Moon, Sun } from 'lucide-react';
+import { Bell, Search, User, Moon, Sun, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { mockAlerts } from '@/data/mockData';
@@ -11,18 +11,26 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center justify-between h-full px-6">
+      <div className="flex items-center justify-between h-full px-4 lg:px-6">
+        {/* Spacer for mobile menu button */}
+        <div className="w-10 lg:hidden" />
+
         {/* Search */}
-        <div className="relative w-96">
+        <div className="relative hidden sm:block w-full max-w-xs lg:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search assets, work orders..."
+            placeholder="Tìm kiếm thiết bị, lệnh công việc..."
             className="pl-10 bg-muted/50 border-muted focus:bg-background"
           />
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 lg:gap-4">
+          {/* Mobile Search Button */}
+          <Button variant="ghost" size="icon" className="sm:hidden">
+            <Search className="w-5 h-5" />
+          </Button>
+
           {/* Theme Toggle */}
           <motion.div whileTap={{ scale: 0.95 }}>
             <Button
@@ -60,13 +68,13 @@ export function Header() {
           </Button>
 
           {/* User */}
-          <div className="flex items-center gap-3 pl-4 border-l border-border">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">Admin User</p>
-              <p className="text-xs text-muted-foreground">Maintenance Manager</p>
+          <div className="flex items-center gap-2 lg:gap-3 pl-2 lg:pl-4 border-l border-border">
+            <div className="text-right hidden md:block">
+              <p className="text-sm font-medium">Admin</p>
+              <p className="text-xs text-muted-foreground">Quản lý bảo trì</p>
             </div>
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/20">
-              <User className="w-5 h-5 text-primary" />
+            <div className="flex items-center justify-center w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-primary/20">
+              <User className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
             </div>
           </div>
         </div>

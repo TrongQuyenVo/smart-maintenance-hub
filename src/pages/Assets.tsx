@@ -40,13 +40,11 @@ export default function Assets() {
   const [statusFilter, setStatusFilter] = useState<AssetStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   
-  // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     type: 'AHU' as AssetType,
@@ -79,7 +77,7 @@ export default function Assets() {
     setAssets([...assets, newAsset]);
     setIsCreateOpen(false);
     setFormData({ name: '', type: 'AHU', location: '', status: 'online' });
-    toast.success('Asset created successfully');
+    toast.success('Tạo thiết bị thành công');
   };
 
   const handleEdit = () => {
@@ -91,7 +89,7 @@ export default function Assets() {
     ));
     setIsEditOpen(false);
     setSelectedAsset(null);
-    toast.success('Asset updated successfully');
+    toast.success('Cập nhật thiết bị thành công');
   };
 
   const handleDelete = () => {
@@ -99,7 +97,7 @@ export default function Assets() {
     setAssets(assets.filter(a => a.id !== selectedAsset.id));
     setIsDeleteOpen(false);
     setSelectedAsset(null);
-    toast.success('Asset deleted successfully');
+    toast.success('Xóa thiết bị thành công');
   };
 
   const openEditModal = (asset: Asset) => {
@@ -118,82 +116,91 @@ export default function Assets() {
     setIsDeleteOpen(true);
   };
 
+  const statusLabels: Record<AssetStatus, string> = {
+    online: 'Hoạt động',
+    warning: 'Cảnh báo',
+    critical: 'Nghiêm trọng',
+    offline: 'Ngừng hoạt động',
+  };
+
   return (
     <motion.div 
-      className="space-y-6"
+      className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Asset Management</h1>
-          <p className="text-muted-foreground">
-            {assets.length} assets registered in the system
+          <h1 className="text-xl sm:text-2xl font-bold">Quản lý thiết bị</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            {assets.length} thiết bị đã đăng ký
           </p>
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
+        <Button onClick={() => setIsCreateOpen(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
-          Add Asset
+          Thêm thiết bị
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[250px] max-w-md">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
+        <div className="relative flex-1 min-w-0 sm:min-w-[250px] sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, ID, or location..."
+            placeholder="Tìm theo tên, ID hoặc vị trí..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-muted/50"
           />
         </div>
 
-        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as AssetType | 'all')}>
-          <SelectTrigger className="w-[150px] bg-muted/50">
-            <SelectValue placeholder="Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="AHU">AHU</SelectItem>
-            <SelectItem value="FCU">FCU</SelectItem>
-            <SelectItem value="Chiller">Chiller</SelectItem>
-            <SelectItem value="Pump">Pump</SelectItem>
-            <SelectItem value="Compressor">Compressor</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2 sm:gap-4">
+          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as AssetType | 'all')}>
+            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
+              <SelectValue placeholder="Loại" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả loại</SelectItem>
+              <SelectItem value="AHU">AHU</SelectItem>
+              <SelectItem value="FCU">FCU</SelectItem>
+              <SelectItem value="Chiller">Chiller</SelectItem>
+              <SelectItem value="Pump">Máy bơm</SelectItem>
+              <SelectItem value="Compressor">Máy nén</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as AssetStatus | 'all')}>
-          <SelectTrigger className="w-[150px] bg-muted/50">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="online">Online</SelectItem>
-            <SelectItem value="warning">Warning</SelectItem>
-            <SelectItem value="critical">Critical</SelectItem>
-            <SelectItem value="offline">Offline</SelectItem>
-          </SelectContent>
-        </Select>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as AssetStatus | 'all')}>
+            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="online">Hoạt động</SelectItem>
+              <SelectItem value="warning">Cảnh báo</SelectItem>
+              <SelectItem value="critical">Nghiêm trọng</SelectItem>
+              <SelectItem value="offline">Ngừng</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <div className="flex items-center border border-border rounded-lg p-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn('h-8 w-8', viewMode === 'grid' && 'bg-muted')}
-            onClick={() => setViewMode('grid')}
-          >
-            <Grid className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn('h-8 w-8', viewMode === 'list' && 'bg-muted')}
-            onClick={() => setViewMode('list')}
-          >
-            <List className="w-4 h-4" />
-          </Button>
+          <div className="hidden sm:flex items-center border border-border rounded-lg p-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('h-8 w-8', viewMode === 'grid' && 'bg-muted')}
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('h-8 w-8', viewMode === 'list' && 'bg-muted')}
+              onClick={() => setViewMode('list')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -202,9 +209,9 @@ export default function Assets() {
         <motion.div 
           key={viewMode}
           className={cn(
-            'grid gap-4',
+            'grid gap-3 sm:gap-4',
             viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
+              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
               : 'grid-cols-1'
           )}
           initial={{ opacity: 0 }}
@@ -228,7 +235,7 @@ export default function Assets() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </Button>
@@ -236,14 +243,14 @@ export default function Assets() {
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => openEditModal(asset)}>
                     <Pencil className="w-4 h-4 mr-2" />
-                    Edit
+                    Chỉnh sửa
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     className="text-destructive"
                     onClick={() => openDeleteModal(asset)}
                   >
                     <Trash className="w-4 h-4 mr-2" />
-                    Delete
+                    Xóa
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -254,31 +261,31 @@ export default function Assets() {
 
       {filteredAssets.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No assets found matching your criteria</p>
+          <p className="text-muted-foreground">Không tìm thấy thiết bị phù hợp</p>
         </div>
       )}
 
       {/* Create Modal */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New Asset</DialogTitle>
+            <DialogTitle>Thêm thiết bị mới</DialogTitle>
             <DialogDescription>
-              Create a new asset in the system
+              Tạo thiết bị mới trong hệ thống
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Asset Name</Label>
+              <Label htmlFor="name">Tên thiết bị</Label>
               <Input 
                 id="name" 
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. AHU-02 Building B"
+                placeholder="VD: AHU-02 Tòa nhà B"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="type">Type</Label>
+              <Label htmlFor="type">Loại thiết bị</Label>
               <Select 
                 value={formData.type} 
                 onValueChange={(v) => setFormData({ ...formData, type: v as AssetType })}
@@ -290,26 +297,26 @@ export default function Assets() {
                   <SelectItem value="AHU">AHU</SelectItem>
                   <SelectItem value="FCU">FCU</SelectItem>
                   <SelectItem value="Chiller">Chiller</SelectItem>
-                  <SelectItem value="Pump">Pump</SelectItem>
-                  <SelectItem value="Compressor">Compressor</SelectItem>
+                  <SelectItem value="Pump">Máy bơm</SelectItem>
+                  <SelectItem value="Compressor">Máy nén</SelectItem>
                   <SelectItem value="Motor">Motor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">Vị trí</Label>
               <Input 
                 id="location" 
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="e.g. Building A - Floor 1"
+                placeholder="VD: Tòa nhà A - Tầng 1"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!formData.name || !formData.location}>
-              Create Asset
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="w-full sm:w-auto">Hủy</Button>
+            <Button onClick={handleCreate} disabled={!formData.name || !formData.location} className="w-full sm:w-auto">
+              Tạo thiết bị
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -317,16 +324,16 @@ export default function Assets() {
 
       {/* Edit Modal */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Asset</DialogTitle>
+            <DialogTitle>Chỉnh sửa thiết bị</DialogTitle>
             <DialogDescription>
-              Update asset information
+              Cập nhật thông tin thiết bị
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">Asset Name</Label>
+              <Label htmlFor="edit-name">Tên thiết bị</Label>
               <Input 
                 id="edit-name" 
                 value={formData.name}
@@ -334,7 +341,7 @@ export default function Assets() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-type">Type</Label>
+              <Label htmlFor="edit-type">Loại</Label>
               <Select 
                 value={formData.type} 
                 onValueChange={(v) => setFormData({ ...formData, type: v as AssetType })}
@@ -346,14 +353,14 @@ export default function Assets() {
                   <SelectItem value="AHU">AHU</SelectItem>
                   <SelectItem value="FCU">FCU</SelectItem>
                   <SelectItem value="Chiller">Chiller</SelectItem>
-                  <SelectItem value="Pump">Pump</SelectItem>
-                  <SelectItem value="Compressor">Compressor</SelectItem>
+                  <SelectItem value="Pump">Máy bơm</SelectItem>
+                  <SelectItem value="Compressor">Máy nén</SelectItem>
                   <SelectItem value="Motor">Motor</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-location">Location</Label>
+              <Label htmlFor="edit-location">Vị trí</Label>
               <Input 
                 id="edit-location" 
                 value={formData.location}
@@ -361,7 +368,7 @@ export default function Assets() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-status">Status</Label>
+              <Label htmlFor="edit-status">Trạng thái</Label>
               <Select 
                 value={formData.status} 
                 onValueChange={(v) => setFormData({ ...formData, status: v as AssetStatus })}
@@ -370,33 +377,33 @@ export default function Assets() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="warning">Warning</SelectItem>
-                  <SelectItem value="critical">Critical</SelectItem>
-                  <SelectItem value="offline">Offline</SelectItem>
+                  <SelectItem value="online">Hoạt động</SelectItem>
+                  <SelectItem value="warning">Cảnh báo</SelectItem>
+                  <SelectItem value="critical">Nghiêm trọng</SelectItem>
+                  <SelectItem value="offline">Ngừng hoạt động</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-            <Button onClick={handleEdit}>Save Changes</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto">Hủy</Button>
+            <Button onClick={handleEdit} className="w-full sm:w-auto">Lưu thay đổi</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Asset</DialogTitle>
+            <DialogTitle>Xóa thiết bị</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{selectedAsset?.name}"? This action cannot be undone.
+              Bạn có chắc muốn xóa "{selectedAsset?.name}"? Hành động này không thể hoàn tác.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} className="w-full sm:w-auto">Hủy</Button>
+            <Button variant="destructive" onClick={handleDelete} className="w-full sm:w-auto">Xóa</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
