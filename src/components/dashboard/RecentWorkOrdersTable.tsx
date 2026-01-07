@@ -12,23 +12,49 @@ export function RecentWorkOrdersTable() {
   const recentOrders = mockWorkOrders.slice(0, 5);
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">Recent Work Orders</h3>
+        <h3 className="text-base sm:text-lg font-semibold">Lệnh công việc gần đây</h3>
         <Button variant="ghost" size="sm" onClick={() => navigate('/work-orders')}>
-          View All <ArrowRight className="w-4 h-4 ml-1" />
+          <span className="hidden sm:inline">Xem tất cả</span>
+          <ArrowRight className="w-4 h-4 sm:ml-1" />
         </Button>
       </div>
       
-      <div className="overflow-x-auto">
+      {/* Mobile Cards View */}
+      <div className="sm:hidden space-y-3">
+        {recentOrders.map((wo, index) => (
+          <motion.div
+            key={wo.id}
+            className="p-3 rounded-lg border border-border/50 hover:bg-muted/30 cursor-pointer"
+            onClick={() => navigate(`/work-orders/${wo.id}`)}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-primary text-xs">{wo.id}</span>
+              <WOStatusBadge status={wo.status} />
+            </div>
+            <p className="text-sm font-medium truncate mb-1">{wo.assetName}</p>
+            <div className="flex items-center justify-between">
+              <WOSourceBadge source={wo.source} />
+              <span className="text-xs text-muted-foreground">{wo.assignee || 'Chưa giao'}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
               <th className="text-left py-2 px-2 font-medium text-muted-foreground">ID</th>
-              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Asset</th>
-              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Source</th>
-              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Status</th>
-              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Assignee</th>
+              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Thiết bị</th>
+              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Nguồn</th>
+              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Trạng thái</th>
+              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Người thực hiện</th>
             </tr>
           </thead>
           <tbody>

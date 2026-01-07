@@ -16,11 +16,11 @@ export function CalendarView() {
   const startingDay = firstDayOfMonth.getDay();
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
   ];
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
   const prevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -40,7 +40,7 @@ export function CalendarView() {
     
     // Empty cells before first day
     for (let i = 0; i < startingDay; i++) {
-      days.push(<div key={`empty-${i}`} className="h-24 border-b border-r border-border/50" />);
+      days.push(<div key={`empty-${i}`} className="h-16 sm:h-20 lg:h-24 border-b border-r border-border/50" />);
     }
     
     // Days of the month
@@ -52,22 +52,22 @@ export function CalendarView() {
         <div
           key={day}
           className={cn(
-            'h-24 p-2 border-b border-r border-border/50 transition-colors hover:bg-muted/30',
+            'h-16 sm:h-20 lg:h-24 p-1 sm:p-2 border-b border-r border-border/50 transition-colors hover:bg-muted/30',
             isToday && 'bg-primary/5'
           )}
         >
           <span className={cn(
-            'inline-flex items-center justify-center w-7 h-7 text-sm rounded-full',
+            'inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 text-xs sm:text-sm rounded-full',
             isToday && 'bg-primary text-primary-foreground font-semibold'
           )}>
             {day}
           </span>
-          <div className="mt-1 space-y-1">
+          <div className="mt-0.5 sm:mt-1 space-y-0.5 sm:space-y-1 hidden sm:block">
             {events.slice(0, 2).map((event, idx) => (
               <div
                 key={idx}
                 className={cn(
-                  'text-xs px-2 py-0.5 rounded truncate',
+                  'text-[10px] sm:text-xs px-1 sm:px-2 py-0.5 rounded truncate',
                   event.type === 'TBM' ? 'bg-info/20 text-info' : 'bg-warning/20 text-warning'
                 )}
               >
@@ -75,8 +75,20 @@ export function CalendarView() {
               </div>
             ))}
             {events.length > 2 && (
-              <span className="text-xs text-muted-foreground">+{events.length - 2} more</span>
+              <span className="text-[10px] text-muted-foreground">+{events.length - 2}</span>
             )}
+          </div>
+          {/* Mobile: show dot only */}
+          <div className="sm:hidden mt-1 flex gap-0.5">
+            {events.slice(0, 2).map((event, idx) => (
+              <div
+                key={idx}
+                className={cn(
+                  'w-1.5 h-1.5 rounded-full',
+                  event.type === 'TBM' ? 'bg-info' : 'bg-warning'
+                )}
+              />
+            ))}
           </div>
         </div>
       );
@@ -88,16 +100,16 @@ export function CalendarView() {
   return (
     <div className="glass-card rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border/50">
-        <h3 className="text-lg font-semibold">Maintenance Calendar</h3>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={prevMonth}>
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/50">
+        <h3 className="text-base sm:text-lg font-semibold">Lịch bảo trì</h3>
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevMonth}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
-          <span className="min-w-[140px] text-center font-medium">
+          <span className="min-w-[100px] sm:min-w-[140px] text-center text-sm sm:text-base font-medium">
             {monthNames[month]} {year}
           </span>
-          <Button variant="ghost" size="icon" onClick={nextMonth}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={nextMonth}>
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
@@ -106,7 +118,7 @@ export function CalendarView() {
       {/* Day Names */}
       <div className="grid grid-cols-7 bg-muted/30">
         {dayNames.map(day => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground border-b border-r border-border/50">
+          <div key={day} className="p-1.5 sm:p-2 text-center text-xs sm:text-sm font-medium text-muted-foreground border-b border-r border-border/50">
             {day}
           </div>
         ))}
@@ -118,14 +130,14 @@ export function CalendarView() {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 p-4 border-t border-border/50">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-info/50" />
-          <span className="text-xs text-muted-foreground">TBM - Scheduled</span>
+      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-t border-border/50">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-info/50" />
+          <span className="text-[10px] sm:text-xs text-muted-foreground">TBM - Định kỳ</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-warning/50" />
-          <span className="text-xs text-muted-foreground">CBM - Triggered</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-warning/50" />
+          <span className="text-[10px] sm:text-xs text-muted-foreground">CBM - Cảm biến</span>
         </div>
       </div>
     </div>
