@@ -38,7 +38,7 @@ export function ChecklistComponent({ items, onUpdate, readonly = false }: Checkl
       {/* Progress */}
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium">
-          Checklist Progress: {completedCount}/{items.length}
+          Tiến độ Checklist: {completedCount}/{items.length}
         </span>
         <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
       </div>
@@ -85,7 +85,7 @@ export function ChecklistComponent({ items, onUpdate, readonly = false }: Checkl
                 {expandedNote === item.id ? (
                   <div className="mt-3 space-y-2">
                     <Textarea
-                      placeholder="Add note..."
+                      placeholder="Thêm ghi chú..."
                       value={item.note || ''}
                       onChange={(e) => updateNote(item.id, e.target.value)}
                       className="min-h-[80px] bg-muted/50"
@@ -97,7 +97,7 @@ export function ChecklistComponent({ items, onUpdate, readonly = false }: Checkl
                       onClick={() => setExpandedNote(null)}
                     >
                       <X className="w-4 h-4 mr-1" />
-                      Close
+                      Đóng
                     </Button>
                   </div>
                 ) : item.note ? (
@@ -114,7 +114,7 @@ export function ChecklistComponent({ items, onUpdate, readonly = false }: Checkl
                   <div className="mt-3">
                     <img
                       src={item.imageUrl}
-                      alt="Evidence"
+                      alt="Bằng chứng"
                       className="max-w-[200px] rounded-lg border border-border"
                     />
                   </div>

@@ -25,7 +25,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   const toggleTheme = () => {
+    const root = window.document.documentElement;
+    // briefly disable transitions so the theme switch appears instant across the app
+    root.classList.add('disable-transitions');
+
     setThemeState(prev => prev === 'light' ? 'dark' : 'light');
+
+    // remove the class on the next animation frame to re-enable transitions
+    requestAnimationFrame(() => root.classList.remove('disable-transitions'));
   };
 
   const setTheme = (newTheme: Theme) => {

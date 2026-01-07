@@ -1,11 +1,20 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Modal } from 'antd';
 import { cn } from '@/lib/utils';
 import { calendarEvents } from '@/data/mockData';
 
 export function CalendarView() {
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 0, 1)); // January 2025
+  // use real current date
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const navigate = useNavigate();
+
+  // selected date modal
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const selectedEvents = selectedDate ? calendarEvents.filter(e => e.date === selectedDate) : [];
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -35,25 +44,36 @@ export function CalendarView() {
     return calendarEvents.filter(e => e.date === dateStr);
   };
 
+  // compute today's date once so we can highlight it in the calendar
+  const today = new Date();
+
   const renderCalendarDays = () => {
     const days = [];
-    
+
     // Empty cells before first day
     for (let i = 0; i < startingDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-16 sm:h-20 lg:h-24 border-b border-r border-border/50" />);
     }
-    
+
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const events = getEventsForDate(day);
-      const isToday = day === 6 && month === 0 && year === 2025; // Mock today
-      
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const hasEvents = events.length > 0;
+      const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear(); // real today
+
       days.push(
         <div
           key={day}
+          role={hasEvents ? 'button' : undefined}
+          tabIndex={hasEvents ? 0 : undefined}
+          title={hasEvents ? `${events.length} sự kiện` : undefined}
+          onClick={() => hasEvents && (setSelectedDate(dateStr), setIsModalOpen(true))}
+          onKeyDown={(e) => hasEvents && (e.key === 'Enter' || e.key === ' ') && (setSelectedDate(dateStr), setIsModalOpen(true))}
           className={cn(
             'h-16 sm:h-20 lg:h-24 p-1 sm:p-2 border-b border-r border-border/50 transition-colors hover:bg-muted/30',
-            isToday && 'bg-primary/5'
+            isToday && 'bg-primary/5',
+            hasEvents && 'cursor-pointer'
           )}
         >
           <span className={cn(
@@ -93,7 +113,7 @@ export function CalendarView() {
         </div>
       );
     }
-    
+
     return days;
   };
 
@@ -128,6 +148,39 @@ export function CalendarView() {
       <div className="grid grid-cols-7">
         {renderCalendarDays()}
       </div>
+
+      {/* Day detail modal */}
+      <Modal
+        title={selectedDate ? `Sự kiện ${new Date(selectedDate).toLocaleDateString('vi-VN')}` : 'Sự kiện'}
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        footer={[
+          <Button key="close" variant="ghost" onClick={() => setIsModalOpen(false)}>Đóng</Button>
+        ]}
+      >
+        {selectedEvents.length === 0 ? (
+          <p className="text-muted-foreground">Không có sự kiện cho ngày này</p>
+        ) : (
+          <div className="space-y-3">
+            {selectedEvents.map((ev, idx) => (
+              <div key={idx} className="p-3 border rounded">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{ev.title}</div>
+                    <div className="text-xs text-muted-foreground">Loại: {ev.type}</div>
+                    {ev.assetId && <div className="text-xs text-muted-foreground">Thiết bị: {ev.assetName || ev.assetId}</div>}
+                  </div>
+                  {ev.assetId && (
+                    <Button size="sm" onClick={() => { setIsModalOpen(false); navigate(`/assets/${ev.assetId}`); }}>
+                      Mở thiết bị
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
 
       {/* Legend */}
       <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-t border-border/50">

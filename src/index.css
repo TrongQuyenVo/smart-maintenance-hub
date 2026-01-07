@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @layer base {
   :root,
@@ -142,6 +144,9 @@
 }
 
 @layer base {
+  /* Disable transitions briefly during theme toggles so the switch appears instant and synchronized */
+  .disable-transitions *, .disable-transitions *::before, .disable-transitions *::after { transition: none !important; }
+
   * {
     @apply border-border;
   }
@@ -162,9 +167,7 @@
   }
 
   .kpi-card {
-    @apply relative overflow-hidden rounded-xl p-5 transition-all duration-300;
-    background: linear-gradient(135deg, hsl(220 18% 15%) 0%, hsl(220 18% 12%) 100%);
-    border: 1px solid hsl(220 15% 25% / 0.5);
+    @apply bg-card/80 relative overflow-hidden backdrop-blur-xl border border-border/50 rounded-xl p-5 transition-all duration-300 shadow-lg;
   }
 
   .kpi-card::before {

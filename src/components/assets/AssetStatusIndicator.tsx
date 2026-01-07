@@ -8,10 +8,10 @@ interface AssetStatusIndicatorProps {
 }
 
 const statusConfig: Record<AssetStatus, { label: string; className: string }> = {
-  online: { label: 'Online', className: 'status-online' },
-  warning: { label: 'Warning', className: 'status-warning' },
-  critical: { label: 'Critical', className: 'status-critical' },
-  offline: { label: 'Offline', className: 'status-offline' },
+  online: { label: 'Hoạt động', className: 'status-online' },
+  warning: { label: 'Cảnh báo', className: 'status-warning' },
+  critical: { label: 'Nghiêm trọng', className: 'status-critical' },
+  offline: { label: 'Ngừng hoạt động', className: 'status-offline' },
 };
 
 const sizeClasses = {

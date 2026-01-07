@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Activity, ThermometerSun, Zap, Gauge, Waves } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -32,15 +33,51 @@ export default function Telemetry() {
     p => p.assetId === selectedAsset && p.metric === selectedMetric
   );
 
+  // Generate and keep stable live values per asset so switching metric doesn't change them
+  const generateValuesForAsset = (assetId: string) => ({
+    temperature: (35 + Math.random() * 10).toFixed(1),
+    current: (28 + Math.random() * 10).toFixed(1),
+    pressure: (4 + Math.random() * 2).toFixed(1),
+    vibration: (1 + Math.random() * 3).toFixed(1),
+  } as Record<MetricType, string>);
+
+  const [liveValues, setLiveValues] = useState<Record<MetricType, string>>(() => generateValuesForAsset(selectedAsset));
+
+  useEffect(() => {
+    // regenerate values only when selected asset changes
+    setLiveValues(generateValuesForAsset(selectedAsset));
+  }, [selectedAsset]);
+
+  // Read query params (asset, metric, hours) and apply them when present
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const assetParam = params.get('asset');
+    const metricParam = params.get('metric');
+    const hoursParam = params.get('hours');
+
+    if (assetParam && mockAssets.some(a => a.id === assetParam)) {
+      setSelectedAsset(assetParam);
+    }
+
+    if (metricParam && metrics.some(m => m.value === metricParam)) {
+      setSelectedMetric(metricParam as MetricType);
+    }
+
+    if (hoursParam && ['1', '6', '24', '72', '168'].includes(hoursParam)) {
+      setTimeRange(hoursParam);
+    }
+  }, [location.search]);
+
   return (
-    <motion.div 
+    <motion.div
       className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
       {/* Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold">Giám sát dữ liệu cảm biến</h1>
+        <span className="text-xl sm:text-2xl font-bold">Giám sát dữ liệu cảm biến</span>
         <p className="text-sm sm:text-base text-muted-foreground">
           Dữ liệu thời gian thực và phân tích xu hướng
         </p>
@@ -113,7 +150,7 @@ export default function Telemetry() {
             return (
               <TabsTrigger key={metric.value} value={metric.value} className="gap-1 sm:gap-2 text-xs sm:text-sm flex-shrink-0">
                 <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">{metric.label}</span>
+                <span className="ml-2">{metric.label}</span>
               </TabsTrigger>
             );
           })}
@@ -157,12 +194,7 @@ export default function Telemetry() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {metrics.map(metric => {
           const Icon = metric.icon;
-          const randomValue = (
-            metric.value === 'temperature' ? 35 + Math.random() * 10 :
-            metric.value === 'current' ? 28 + Math.random() * 10 :
-            metric.value === 'pressure' ? 4 + Math.random() * 2 :
-            1 + Math.random() * 3
-          ).toFixed(1);
+          const value = liveValues[metric.value];
 
           return (
             <motion.div
@@ -181,7 +213,7 @@ export default function Telemetry() {
                   <span className="text-xs sm:text-sm text-muted-foreground">{metric.label}</span>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-xl sm:text-2xl font-bold font-mono">{randomValue}</span>
+                  <span className="text-xl sm:text-2xl font-bold font-mono">{value}</span>
                   <span className="text-xs sm:text-sm text-muted-foreground">{metric.unit}</span>
                 </div>
                 <div className="mt-2 flex items-center gap-1">

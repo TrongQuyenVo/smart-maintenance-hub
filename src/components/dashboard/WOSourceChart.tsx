@@ -1,11 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { mockDashboardStats } from '@/data/mockData';
+import { mockWorkOrders } from '@/data/mockData';
+
+const tbmCount = mockWorkOrders.filter(w => w.source === 'TBM').length;
+const cbmCount = mockWorkOrders.filter(w => w.source === 'CBM').length;
+const manualCount = mockWorkOrders.filter(w => w.source === 'Manual').length;
 
 const data = [
-  { name: 'TBM', value: mockDashboardStats.tbmCount, color: 'hsl(200, 85%, 55%)' },
-  { name: 'CBM', value: mockDashboardStats.cbmCount, color: 'hsl(175, 80%, 50%)' },
-  { name: 'Thủ công', value: mockDashboardStats.manualCount, color: 'hsl(35, 95%, 55%)' },
+  { name: 'TBM', value: tbmCount, color: 'hsl(200, 85%, 55%)' },
+  { name: 'CBM', value: cbmCount, color: 'hsl(175, 80%, 50%)' },
+  { name: 'Thủ công', value: manualCount, color: 'hsl(35, 95%, 55%)' },
 ];
+
+const legendFormatter = (value: any) => (
+  <span className="text-xs sm:text-sm text-foreground">{value}</span>
+);
 
 export function WOSourceChart() {
   return (
@@ -24,8 +33,8 @@ export function WOSourceChart() {
               dataKey="value"
               stroke="none"
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+              {data.map((entry) => (
+                <Cell key={`cell-${entry.name}`} fill={entry.color} />
               ))}
             </Pie>
             <Tooltip
@@ -39,9 +48,7 @@ export function WOSourceChart() {
             <Legend
               verticalAlign="bottom"
               height={36}
-              formatter={(value) => (
-                <span className="text-xs sm:text-sm text-foreground">{value}</span>
-              )}
+              formatter={legendFormatter}
             />
           </PieChart>
         </ResponsiveContainer>

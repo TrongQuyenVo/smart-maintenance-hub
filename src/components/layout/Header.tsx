@@ -70,7 +70,7 @@ export function Header() {
           {/* User */}
           <div className="flex items-center gap-2 lg:gap-3 pl-2 lg:pl-4 border-l border-border">
             <div className="text-right hidden md:block">
-              <p className="text-sm font-medium">Admin</p>
+              <span className="text-sm font-medium">Admin</span>
               <p className="text-xs text-muted-foreground">Quản lý bảo trì</p>
             </div>
             <div className="flex items-center justify-center w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-primary/20">

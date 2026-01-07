@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockWorkOrders } from '@/data/mockData';
 import { WOStatusBadge } from '@/components/workorder/WOStatusBadge';
@@ -9,7 +10,20 @@ import { motion } from 'framer-motion';
 
 export function RecentWorkOrdersTable() {
   const navigate = useNavigate();
+  // live clock for relative times
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+
   const recentOrders = mockWorkOrders.slice(0, 5);
+
+  const timeAgo = (iso?: string) => {
+    if (!iso) return '-';
+    // Only show the date (no time)
+    return new Date(iso).toLocaleDateString('vi-VN');
+  };
 
   return (
     <Card className="p-4 sm:p-6">
@@ -20,7 +34,7 @@ export function RecentWorkOrdersTable() {
           <ArrowRight className="w-4 h-4 sm:ml-1" />
         </Button>
       </div>
-      
+
       {/* Mobile Cards View */}
       <div className="sm:hidden space-y-3">
         {recentOrders.map((wo, index) => (
@@ -39,7 +53,10 @@ export function RecentWorkOrdersTable() {
             <p className="text-sm font-medium truncate mb-1">{wo.assetName}</p>
             <div className="flex items-center justify-between">
               <WOSourceBadge source={wo.source} />
-              <span className="text-xs text-muted-foreground">{wo.assignee || 'Chưa giao'}</span>
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground">{wo.assignee || 'Chưa giao'}</div>
+                <div className="text-[10px] text-muted-foreground">{timeAgo(wo.createdAt)}</div>
+              </div>
             </div>
           </motion.div>
         ))}
@@ -55,6 +72,7 @@ export function RecentWorkOrdersTable() {
               <th className="text-left py-2 px-2 font-medium text-muted-foreground">Nguồn</th>
               <th className="text-left py-2 px-2 font-medium text-muted-foreground">Trạng thái</th>
               <th className="text-left py-2 px-2 font-medium text-muted-foreground">Người thực hiện</th>
+              <th className="text-left py-2 px-2 font-medium text-muted-foreground">Thời gian</th>
             </tr>
           </thead>
           <tbody>
@@ -72,6 +90,7 @@ export function RecentWorkOrdersTable() {
                 <td className="py-3 px-2"><WOSourceBadge source={wo.source} /></td>
                 <td className="py-3 px-2"><WOStatusBadge status={wo.status} /></td>
                 <td className="py-3 px-2 text-muted-foreground">{wo.assignee || '-'}</td>
+                <td className="py-3 px-2 text-muted-foreground">{timeAgo(wo.createdAt)}</td>
               </motion.tr>
             ))}
           </tbody>

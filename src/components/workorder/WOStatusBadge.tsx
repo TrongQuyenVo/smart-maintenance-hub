@@ -9,19 +9,19 @@ interface WOStatusBadgeProps {
 
 const statusConfig: Record<WOStatus, { label: string; className: string }> = {
   open: {
-    label: 'Open',
+    label: 'Mở',
     className: 'bg-info/20 text-info border-info/30 hover:bg-info/30',
   },
   in_progress: {
-    label: 'In Progress',
+    label: 'Đang xử lý',
     className: 'bg-warning/20 text-warning border-warning/30 hover:bg-warning/30',
   },
   done: {
-    label: 'Done',
+    label: 'Hoàn thành',
     className: 'bg-success/20 text-success border-success/30 hover:bg-success/30',
   },
   overdue: {
-    label: 'Overdue',
+    label: 'Quá hạn',
     className: 'bg-destructive/20 text-destructive border-destructive/30 hover:bg-destructive/30',
   },
 };

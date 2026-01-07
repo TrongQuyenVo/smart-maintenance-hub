@@ -1,4 +1,5 @@
 import { AlertTriangle, ThermometerSun, Zap, Gauge, Activity } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { mockAlerts } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,14 @@ const severityColors: Record<AlertSeverity, string> = {
 };
 
 export function HotAlertsList() {
+  // keep a ticking clock so relative times update in real-time
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60_000); // update each minute
+    return () => clearInterval(t);
+  }, []);
+
   const activeAlerts = mockAlerts
     .filter(a => !a.resolvedAt)
     .sort((a, b) => {
@@ -28,25 +37,29 @@ export function HotAlertsList() {
     })
     .slice(0, 5);
 
+  const timeAgo = (iso: string) => {
+    const diffSec = Math.floor((now - new Date(iso).getTime()) / 1000);
+    if (diffSec < 60) return `${diffSec}s trước`;
+    if (diffSec < 3600) return `${Math.floor(diffSec / 60)} phút trước`;
+    if (diffSec < 86400) return `${Math.floor(diffSec / 3600)} giờ trước`;
+    return new Date(iso).toLocaleDateString('vi-VN');
+  };
+
   return (
     <div className="glass-card rounded-xl overflow-hidden">
       <div className="flex items-center justify-between p-4 border-b border-border/50">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-warning" />
-          <h3 className="text-lg font-semibold">Critical Alerts</h3>
+          <h3 className="text-lg font-semibold">Cảnh báo nghiêm trọng</h3>
         </div>
         <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
-          {activeAlerts.length} Active
+          {activeAlerts.length} Hoạt động
         </Badge>
       </div>
 
       <div className="divide-y divide-border/50">
         {activeAlerts.map((alert) => {
           const MetricIcon = metricIcons[alert.metric];
-          const time = new Date(alert.timestamp).toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit',
-          });
 
           return (
             <div
@@ -84,7 +97,7 @@ export function HotAlertsList() {
                   {' > '}
                   <span className="text-warning font-mono">{alert.threshold}</span>
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">{time}</p>
+                <p className="text-xs text-muted-foreground mt-1">{timeAgo(alert.timestamp)}</p>
               </div>
 
               {!alert.acknowledged && (
@@ -98,7 +111,7 @@ export function HotAlertsList() {
       {activeAlerts.length === 0 && (
         <div className="p-8 text-center text-muted-foreground">
           <Activity className="w-10 h-10 mx-auto mb-2 opacity-50" />
-          <p>No active alerts</p>
+          <p>Không có cảnh báo đang hoạt động</p>
         </div>
       )}
     </div>

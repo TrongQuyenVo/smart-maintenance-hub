@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import { Bell, Check, AlertTriangle, ThermometerSun, Zap, Gauge, Activity, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { mockAlerts } from '@/data/mockData';
+import { mockAlerts, mockAssets } from '@/data/mockData';
 import { Alert, AlertSeverity, MetricType } from '@/types/maintenance';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -33,28 +34,28 @@ const metricLabels: Record<MetricType, string> = {
   humidity: 'Độ ẩm',
 };
 
-const severityConfig: Record<AlertSeverity, { 
-  label: string; 
+const severityConfig: Record<AlertSeverity, {
+  label: string;
   className: string;
   bgClass: string;
 }> = {
-  critical: { 
-    label: 'Nghiêm trọng', 
+  critical: {
+    label: 'Nghiêm trọng',
     className: 'bg-destructive text-destructive-foreground',
     bgClass: 'bg-destructive/10 border-destructive/30',
   },
-  high: { 
-    label: 'Cao', 
+  high: {
+    label: 'Cao',
     className: 'bg-warning text-warning-foreground',
     bgClass: 'bg-warning/10 border-warning/30',
   },
-  medium: { 
-    label: 'Trung bình', 
+  medium: {
+    label: 'Trung bình',
     className: 'bg-info text-info-foreground',
     bgClass: 'bg-info/10 border-info/30',
   },
-  low: { 
-    label: 'Thấp', 
+  low: {
+    label: 'Thấp',
     className: 'bg-muted text-muted-foreground',
     bgClass: 'bg-muted/50 border-border',
   },
@@ -67,25 +68,69 @@ export default function Alerts() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'acknowledged' | 'resolved'>('all');
 
   const acknowledgeAlert = (id: string) => {
-    setAlerts(alerts.map(a => 
+    setAlerts(alerts.map(a =>
       a.id === id ? { ...a, acknowledged: true } : a
     ));
     toast.success('Đã xác nhận cảnh báo');
   };
 
   const createWOFromAlert = (alert: Alert) => {
-    toast.success(`Đã tạo lệnh công việc từ cảnh báo ${alert.id}`);
+    // Build a new work order and persist to localStorage so it appears in the list
+    const raw = localStorage.getItem('workOrders');
+    const list = raw ? JSON.parse(raw) : [];
+    const asset = mockAssets.find(a => a.id === alert.assetId);
+
+    const severityToPriority: Record<AlertSeverity, 'critical' | 'high' | 'medium' | 'low'> = {
+      critical: 'critical',
+      high: 'high',
+      medium: 'medium',
+      low: 'low',
+    };
+
+    const woId = `WO-${Date.now().toString(36)}`;
+    const defaultChecklist = [
+      { id: `${woId}-1`, title: 'Kiểm tra cảm biến và kết nối', completed: false },
+      { id: `${woId}-2`, title: `Xác nhận giá trị ${metricLabels[alert.metric]} vượt ngưỡng`, completed: false },
+      { id: `${woId}-3`, title: 'Thực hiện hiệu chỉnh/cân chỉnh nếu cần', completed: false },
+      { id: `${woId}-4`, title: 'Ghi lại kết quả và đóng lệnh', completed: false },
+    ];
+
+    const newWO = {
+      id: woId,
+      title: `CBM: ${alert.assetName} - ${metricLabels[alert.metric]}`,
+      assetId: alert.assetId,
+      assetName: asset ? asset.name : alert.assetName,
+      source: 'CBM' as any,
+      status: 'open' as any,
+      priority: severityToPriority[alert.severity] || 'medium',
+      createdAt: new Date().toISOString(),
+      dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      assignee: '',
+      checklist: defaultChecklist,
+      notes: `Tạo từ cảnh báo ${alert.id}: ${metricLabels[alert.metric]}=${alert.value} vượt ${alert.threshold}`,
+      triggerInfo: {
+        metric: alert.metric,
+        value: alert.value,
+        threshold: alert.threshold,
+        chartLink: `/telemetry?asset=${alert.assetId}&metric=${alert.metric}`,
+      },
+    };
+
+    const updated = [newWO, ...list];
+    localStorage.setItem('workOrders', JSON.stringify(updated));
+
+    toast.success(`Đã tạo lệnh công việc ${newWO.id} từ cảnh báo ${alert.id}`);
     navigate('/work-orders');
   };
 
   const filteredAlerts = alerts.filter(alert => {
     const matchesSeverity = severityFilter === 'all' || alert.severity === severityFilter;
-    const matchesStatus = 
+    const matchesStatus =
       statusFilter === 'all' ||
       (statusFilter === 'active' && !alert.resolvedAt && !alert.acknowledged) ||
       (statusFilter === 'acknowledged' && alert.acknowledged && !alert.resolvedAt) ||
       (statusFilter === 'resolved' && alert.resolvedAt);
-    
+
     return matchesSeverity && matchesStatus;
   });
 
@@ -93,7 +138,7 @@ export default function Alerts() {
   const criticalCount = alerts.filter(a => a.severity === 'critical' && !a.resolvedAt).length;
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -101,7 +146,7 @@ export default function Alerts() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Trung tâm cảnh báo</h1>
+          <span className="text-xl sm:text-2xl font-bold">Trung tâm cảnh báo</span>
           <p className="text-sm sm:text-base text-muted-foreground">
             Giám sát và quản lý các vi phạm ngưỡng CBM
           </p>
@@ -203,14 +248,14 @@ export default function Alerts() {
                         </Badge>
                       )}
                     </div>
-                    
-                    <h3 
+
+                    <h3
                       className="font-semibold text-sm sm:text-base cursor-pointer hover:text-primary"
                       onClick={() => navigate(`/assets/${alert.assetId}`)}
                     >
                       {alert.assetName}
                     </h3>
-                    
+
                     <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                       {metricLabels[alert.metric]}:{' '}
                       <span className="font-mono text-foreground">{alert.value}</span>
