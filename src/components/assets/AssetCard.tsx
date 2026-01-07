@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface AssetCardProps {
   asset: Asset;
+  onClick?: () => void;
 }
 
 const typeColors: Record<string, string> = {
@@ -19,8 +20,16 @@ const typeColors: Record<string, string> = {
   Motor: 'bg-destructive/20 text-destructive border-destructive/30',
 };
 
-export function AssetCard({ asset }: AssetCardProps) {
+export function AssetCard({ asset, onClick }: AssetCardProps) {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/assets/${asset.id}`);
+    }
+  };
 
   return (
     <Card
@@ -29,7 +38,7 @@ export function AssetCard({ asset }: AssetCardProps) {
         'hover:border-primary/50 hover:shadow-glow',
         'bg-card border-border'
       )}
-      onClick={() => navigate(`/assets/${asset.id}`)}
+      onClick={handleClick}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
