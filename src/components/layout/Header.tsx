@@ -44,7 +44,7 @@ export function Header() {
           </motion.div>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
+          {/* <Button variant="ghost" size="icon" className="relative">
             <Bell className="w-5 h-5" />
             {unacknowledgedAlerts > 0 && (
               <motion.span
@@ -55,13 +55,13 @@ export function Header() {
                 {unacknowledgedAlerts}
               </motion.span>
             )}
-          </Button>
+          </Button> */}
 
           {/* User */}
           <div className="flex items-center gap-2 lg:gap-3 pl-2 lg:pl-4 border-l border-border">
-            <div className="text-right hidden md:block">
+            <div className="hidden md:flex md:flex-col md:items-end md:text-right">
               <span className="text-sm font-medium">Admin</span>
-              <p className="text-xs text-muted-foreground">Quản lý bảo trì</p>
+              <span className="text-xs text-muted-foreground">Quản lý bảo trì</span>
             </div>
             <div className="flex items-center justify-center w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-primary/20">
               <User className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />

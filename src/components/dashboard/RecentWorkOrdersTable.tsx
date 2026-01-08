@@ -17,7 +17,7 @@ export function RecentWorkOrdersTable() {
     return () => clearInterval(t);
   }, []);
 
-  const recentOrders = mockWorkOrders.slice(0, 5);
+  const recentOrders = mockWorkOrders.slice(0, 20);
 
   const timeAgo = (iso?: string) => {
     if (!iso) return '-';

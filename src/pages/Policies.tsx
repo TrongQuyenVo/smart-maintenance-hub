@@ -172,12 +172,12 @@ export default function Policies() {
       </div>
 
       <Tabs defaultValue="tbm" className="space-y-6">
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="tbm" className="gap-2">
+        <TabsList className="bg-muted/50 px-2">
+          <TabsTrigger value="tbm" className="gap-2 flex-shrink-0 whitespace-nowrap py-2 px-3">
             <Clock className="w-4 h-4" />
             Chính sách TBM
           </TabsTrigger>
-          <TabsTrigger value="cbm" className="gap-2">
+          <TabsTrigger value="cbm" className="gap-2 flex-shrink-0 whitespace-nowrap py-2 px-3">
             <Activity className="w-4 h-4" />
             Quy tắc CBM
           </TabsTrigger>
@@ -186,8 +186,8 @@ export default function Policies() {
         {/* TBM Section */}
         <TabsContent value="tbm" className="space-y-6">
           <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+              <div className="flex items-start sm:items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-info/20">
                   <Clock className="w-5 h-5 text-info" />
                 </div>
@@ -198,10 +198,12 @@ export default function Policies() {
                   </p>
                 </div>
               </div>
-              <Button onClick={openCreateTBM}>
-                <Plus className="w-4 h-4 mr-2" />
-                Thêm chính sách TBM
-              </Button>
+              <div className="mt-3 sm:mt-0 w-full sm:w-auto">
+                <Button onClick={openCreateTBM} className="w-full">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Thêm chính sách TBM
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -231,7 +233,7 @@ export default function Policies() {
                       </div>
                       <h3 className="font-semibold mb-1">{getAssetName(policy.assetId)}</h3>
 
-                      <div className="grid grid-cols-3 gap-4 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                         <div>
                           <Label className="text-xs text-muted-foreground">Chu kỳ (ngày)</Label>
                           <p className="font-mono text-lg">{policy.intervalDays} ngày</p>
@@ -274,7 +276,7 @@ export default function Policies() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 sm:mt-0">
                       <Button variant="ghost" size="icon" onClick={() => openEditTBM(policy)}>
                         <Settings className="w-4 h-4" />
                       </Button>
@@ -296,22 +298,24 @@ export default function Policies() {
         {/* CBM Section */}
         <TabsContent value="cbm" className="space-y-6">
           <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+              <div className="flex items-start sm:items-center gap-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/20">
                   <Activity className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">Bảo trì theo điều kiện</h2>
+                  <span className="text-lg font-semibold">Bảo trì theo thời gian</span>
                   <p className="text-sm text-muted-foreground">
                     Kích hoạt bảo trì dựa trên ngưỡng cảm biến
                   </p>
                 </div>
               </div>
-              <Button onClick={openCreateCBM}>
-                <Plus className="w-4 h-4 mr-2" />
-                Thêm quy tắc CBM
-              </Button>
+              <div className="mt-3 sm:mt-0 w-full sm:w-auto">
+                <Button onClick={openCreateTBM} className="w-full">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Thêm quy tắc CBM
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -346,7 +350,7 @@ export default function Policies() {
                       </div>
                       <h3 className="font-semibold mb-1">{getAssetName(policy.assetId)}</h3>
 
-                      <div className="grid grid-cols-4 gap-4 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
                         <div>
                           <Label className="text-xs text-muted-foreground">Thông số</Label>
                           <p className="font-medium">{metricLabels[policy.metric]}</p>
@@ -386,7 +390,7 @@ export default function Policies() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 sm:mt-0">
                       <Button variant="ghost" size="icon" onClick={() => openEditCBM(policy)}>
                         <Settings className="w-4 h-4" />
                       </Button>
@@ -406,7 +410,7 @@ export default function Policies() {
 
           {/* CBM Priority Info */}
           <Card className="p-4 border-warning/30 bg-warning/5">
-            <div className="flex items-start gap-3">
+            <div className="flex flex-col sm:flex-row items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
               <div>
                 <h4 className="font-semibold mb-1">Ưu tiên ghi đè CBM</h4>
@@ -425,6 +429,11 @@ export default function Policies() {
       <Modal
         title={editingTBM ? 'Chỉnh sửa TBM' : 'Thêm TBM'}
         open={isTBMDialogOpen}
+        width="95vw"
+        style={{ maxWidth: 520 }}
+        maskStyle={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+        bodyStyle={{ maxHeight: '80vh', overflowY: 'auto' }}
+        centered
         onCancel={() => setTBMDialogOpen(false)}
         footer={[
           <Button key="cancel" variant="ghost" onClick={() => setTBMDialogOpen(false)}>Hủy</Button>,
@@ -458,6 +467,11 @@ export default function Policies() {
       <Modal
         title={editingCBM ? 'Chỉnh sửa CBM' : 'Thêm CBM'}
         open={isCBMDialogOpen}
+        width="95vw"
+        style={{ maxWidth: 520 }}
+        maskStyle={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+        bodyStyle={{ maxHeight: '80vh', overflowY: 'auto' }}
+        centered
         onCancel={() => setCBMDialogOpen(false)}
         footer={[
           <Button key="cancel" variant="ghost" onClick={() => setCBMDialogOpen(false)}>Hủy</Button>,

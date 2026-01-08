@@ -98,6 +98,7 @@ export default function WorkOrders() {
       <Modal
         title="Tạo lệnh công việc mới"
         open={isCreateOpen}
+        centered
         onCancel={() => setIsCreateOpen(false)}
         footer={[
           <Button key="cancel" variant="ghost" onClick={() => setIsCreateOpen(false)}>Hủy</Button>,
@@ -165,7 +166,15 @@ export default function WorkOrders() {
             </Form.Item>
 
             <Form.Item name="assignee" label="Người thực hiện">
-              <AntInput />
+              <AntSelect placeholder="Chọn người thực hiện" allowClear>
+                {assignees.length === 0 ? (
+                  <AntSelect.Option value="" disabled>Không có người thực hiện</AntSelect.Option>
+                ) : (
+                  assignees.map(a => (
+                    <AntSelect.Option key={a} value={a}>{a}</AntSelect.Option>
+                  ))
+                )}
+              </AntSelect>
             </Form.Item>
           </div>
 

@@ -44,7 +44,7 @@ export default function Dashboard() {
 
         return (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }} className="h-full">
               <KPICard
                 title="Đang mở"
                 value={openWO}
@@ -53,7 +53,7 @@ export default function Dashboard() {
                 variant="default"
               />
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }} className="h-full">
               <KPICard
                 title="Đang xử lý"
                 value={inProgressWO}
@@ -62,7 +62,7 @@ export default function Dashboard() {
                 variant="warning"
               />
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }} className="h-full">
               <KPICard
                 title="Quá hạn"
                 value={overdueWO}
@@ -71,7 +71,7 @@ export default function Dashboard() {
                 variant="danger"
               />
             </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }}>
+            <motion.div whileHover={{ scale: 1.02 }} transition={{ duration: 0.2 }} className="h-full">
               <KPICard
                 title="Cảnh báo CBM"
                 value={criticalAlerts}
@@ -85,18 +85,18 @@ export default function Dashboard() {
       })()}
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 sm:gap-6">
         <CalendarView />
         <RecentWorkOrdersTable />
       </div>
 
       {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 sm:gap-6">
         <WOSourceChart />
 
         {/* System Health Overview */}
         <motion.div
-          className="lg:col-span-2 glass-card rounded-xl p-4 sm:p-6"
+          className="glass-card rounded-xl p-4 sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
@@ -108,7 +108,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4">
             <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-muted/30">
               <span className="text-xs sm:text-sm">Thiết bị hoạt động</span>
-              <span className="font-mono text-xs sm:text-sm text-success">3/5 (60%)</span>
+              <span className="font-mono text-xs sm:text-sm text-success">3/5(60%)</span>
             </div>
             <div className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-muted/30">
               <span className="text-xs sm:text-sm">Luồng dữ liệu</span>

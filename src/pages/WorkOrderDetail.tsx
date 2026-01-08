@@ -141,6 +141,7 @@ export default function WorkOrderDetail() {
       setPartModalOpen(false);
     } catch (err) {
       console.warn('Add part failed', err);
+      toast.error('Vui lòng kiểm tra thông tin vật tư');
     }
   };
 
@@ -331,7 +332,12 @@ export default function WorkOrderDetail() {
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold">Vật tư sử dụng</h2>
-                  <Button variant="outline" size="sm" onClick={() => setPartModalOpen(true)} disabled={!isEditable}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { partForm.setFieldsValue({ quantity: 1, unitCost: 0 }); setPartModalOpen(true); }}
+                    disabled={!isEditable}
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Thêm vật tư
                   </Button>
@@ -372,22 +378,28 @@ export default function WorkOrderDetail() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Chi phí dự toán (VND)</Label>
-                    <Input
-                      type="number"
+                    <InputNumber
+                      min={0}
                       value={estimatedCost}
-                      onChange={(e) => setEstimatedCost(Number(e.target.value))}
+                      formatter={(value) => value ? value.toString().replaceAll(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                      parser={(value) => value ? value.toString().replaceAll('.', '') : '' as unknown as 0}
+                      onChange={(v) => setEstimatedCost(Number(v || 0))}
                       disabled={!isEditable}
                       className="bg-muted/30 mt-1"
+                      style={{ width: '100%' }}
                     />
                   </div>
                   <div>
                     <Label>Chi phí thực tế (VND)</Label>
-                    <Input
-                      type="number"
+                    <InputNumber
+                      min={0}
                       value={actualCost}
-                      onChange={(e) => setActualCost(Number(e.target.value))}
+                      formatter={(value) => value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                      parser={(value) => value ? value.toString().replace(/\./g, '') : ''}
+                      onChange={(v) => setActualCost(Number(v || 0))}
                       disabled={!isEditable}
                       className="bg-muted/30 mt-1"
+                      style={{ width: '100%' }}
                     />
                   </div>
                 </div>
@@ -540,22 +552,27 @@ export default function WorkOrderDetail() {
       <Modal
         title="Thêm vật tư"
         open={isPartModalOpen}
-        onCancel={() => setPartModalOpen(false)}
+        onCancel={() => { setPartModalOpen(false); partForm.resetFields(); }}
         footer={[
           <Button key="cancel" variant="ghost" onClick={() => setPartModalOpen(false)}>Hủy</Button>,
           <Button key="save" onClick={addPart}>Thêm</Button>
         ]}
       >
-        <Form form={partForm} layout="vertical">
+        <Form form={partForm} layout="vertical" initialValues={{ quantity: 1, unitCost: 0 }}>
           <Form.Item name="name" label="Tên vật tư" rules={[{ required: true, message: 'Nhập tên vật tư' }]}>
             <AntInput placeholder="VD: Bộ lọc khí, Dầu bôi trơn..." />
           </Form.Item>
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item name="quantity" label="Số lượng" rules={[{ required: true }]}>
-              <InputNumber min={1} defaultValue={1} style={{ width: '100%' }} />
+            <Form.Item name="quantity" label="Số lượng" rules={[{ required: true, message: 'Nhập số lượng' }]}>
+              <InputNumber min={1} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item name="unitCost" label="Đơn giá (VND)" rules={[{ required: true }]}>
-              <InputNumber min={0} defaultValue={0} style={{ width: '100%' }} />
+            <Form.Item name="unitCost" label="Đơn giá (VND)" rules={[{ required: true, message: 'Nhập đơn giá' }]}>
+              <InputNumber
+                min={0}
+                formatter={(value) => value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                parser={(value) => value ? value.toString().replace(/\./g, '') : ''}
+                style={{ width: '100%' }}
+              />
             </Form.Item>
           </div>
         </Form>

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Plus, Grid, List, MoreVertical, Pencil, Trash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -16,15 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Modal, Form, Input as AntInput, Select as AntSelect } from 'antd';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { mockAssets } from '@/data/mockData';
 import { Asset, AssetType, AssetStatus } from '@/types/maintenance';
@@ -39,57 +31,75 @@ export default function Assets() {
   const [typeFilter, setTypeFilter] = useState<AssetType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<AssetStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'AHU' as AssetType,
-    location: '',
-    status: 'online' as AssetStatus,
-  });
+
+  const [createForm] = Form.useForm();
+  const [editForm] = Form.useForm();
+
+  useEffect(() => {
+    const raw = localStorage.getItem('assets');
+    if (raw) {
+      try { setAssets(JSON.parse(raw)); } catch (e) { console.warn('Failed to parse assets from localStorage', e); }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('assets', JSON.stringify(assets));
+  }, [assets]);
 
   const filteredAssets = assets.filter(asset => {
-    const matchesSearch = 
+    const matchesSearch =
       asset.name.toLowerCase().includes(search.toLowerCase()) ||
       asset.id.toLowerCase().includes(search.toLowerCase()) ||
       asset.location.toLowerCase().includes(search.toLowerCase());
-    
+
     const matchesType = typeFilter === 'all' || asset.type === typeFilter;
     const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
 
     return matchesSearch && matchesType && matchesStatus;
   });
 
-  const handleCreate = () => {
-    const newAsset: Asset = {
-      id: `AST-${String(assets.length + 1).padStart(3, '0')}`,
-      name: formData.name,
-      type: formData.type,
-      location: formData.location,
-      status: formData.status,
-      specifications: {},
-      installDate: new Date().toISOString(),
-    };
-    setAssets([...assets, newAsset]);
-    setIsCreateOpen(false);
-    setFormData({ name: '', type: 'AHU', location: '', status: 'online' });
-    toast.success('Tạo thiết bị thành công');
+  const handleCreate = async () => {
+    try {
+      const values = await createForm.validateFields();
+      const newAsset: Asset = {
+        id: `AST-${Date.now().toString(36).toUpperCase()}`,
+        name: values.name,
+        type: values.type,
+        location: values.location,
+        status: values.status || 'online',
+        specifications: {},
+        installDate: new Date().toISOString(),
+      };
+      setAssets(prev => [newAsset, ...prev]);
+      setIsCreateOpen(false);
+      createForm.resetFields();
+      toast.success('Tạo thiết bị thành công');
+    } catch (err) {
+      console.warn('Create asset failed', err);
+    }
   };
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
     if (!selectedAsset) return;
-    setAssets(assets.map(a => 
-      a.id === selectedAsset.id 
-        ? { ...a, name: formData.name, type: formData.type, location: formData.location, status: formData.status }
-        : a
-    ));
-    setIsEditOpen(false);
-    setSelectedAsset(null);
-    toast.success('Cập nhật thiết bị thành công');
+    try {
+      const values = await editForm.validateFields();
+      setAssets(prev => prev.map(a =>
+        a.id === selectedAsset.id
+          ? { ...a, name: values.name, type: values.type, location: values.location, status: values.status || a.status }
+          : a
+      ));
+      setIsEditOpen(false);
+      setSelectedAsset(null);
+      editForm.resetFields();
+      toast.success('Cập nhật thiết bị thành công');
+    } catch (err) {
+      console.warn('Edit asset failed', err);
+    }
   };
 
   const handleDelete = () => {
@@ -102,7 +112,7 @@ export default function Assets() {
 
   const openEditModal = (asset: Asset) => {
     setSelectedAsset(asset);
-    setFormData({
+    editForm.setFieldsValue({
       name: asset.name,
       type: asset.type,
       location: asset.location,
@@ -124,7 +134,7 @@ export default function Assets() {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -206,12 +216,12 @@ export default function Assets() {
 
       {/* Assets Grid/List */}
       <AnimatePresence mode="wait">
-        <motion.div 
+        <motion.div
           key={viewMode}
           className={cn(
             'grid gap-3 sm:gap-4',
-            viewMode === 'grid' 
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
+            viewMode === 'grid'
+              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
               : 'grid-cols-1'
           )}
           initial={{ opacity: 0 }}
@@ -226,8 +236,8 @@ export default function Assets() {
               transition={{ delay: index * 0.05 }}
               className="relative group"
             >
-              <AssetCard 
-                asset={asset} 
+              <AssetCard
+                asset={asset}
                 onClick={() => navigate(`/assets/${asset.id}`)}
               />
               <DropdownMenu>
@@ -245,7 +255,7 @@ export default function Assets() {
                     <Pencil className="w-4 h-4 mr-2" />
                     Chỉnh sửa
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="text-destructive"
                     onClick={() => openDeleteModal(asset)}
                   >
@@ -266,147 +276,89 @@ export default function Assets() {
       )}
 
       {/* Create Modal */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Thêm thiết bị mới</DialogTitle>
-            <DialogDescription>
-              Tạo thiết bị mới trong hệ thống
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Tên thiết bị</Label>
-              <Input 
-                id="name" 
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="VD: AHU-02 Tòa nhà B"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="type">Loại thiết bị</Label>
-              <Select 
-                value={formData.type} 
-                onValueChange={(v) => setFormData({ ...formData, type: v as AssetType })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="AHU">AHU</SelectItem>
-                  <SelectItem value="FCU">FCU</SelectItem>
-                  <SelectItem value="Chiller">Chiller</SelectItem>
-                  <SelectItem value="Pump">Máy bơm</SelectItem>
-                  <SelectItem value="Compressor">Máy nén</SelectItem>
-                  <SelectItem value="Motor">Motor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location">Vị trí</Label>
-              <Input 
-                id="location" 
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="VD: Tòa nhà A - Tầng 1"
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="w-full sm:w-auto">Hủy</Button>
-            <Button onClick={handleCreate} disabled={!formData.name || !formData.location} className="w-full sm:w-auto">
-              Tạo thiết bị
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Modal
+        title="Thêm thiết bị mới"
+        open={isCreateOpen}
+        centered
+        onCancel={() => { setIsCreateOpen(false); createForm.resetFields(); }}
+        footer={[
+          <Button key="cancel" variant="ghost" onClick={() => { setIsCreateOpen(false); createForm.resetFields(); }}>Hủy</Button>,
+          <Button key="save" onClick={handleCreate}>Tạo thiết bị</Button>
+        ]}
+      >
+        <Form form={createForm} layout="vertical" initialValues={{ type: 'AHU', status: 'online' }}>
+          <Form.Item name="name" label="Tên thiết bị" rules={[{ required: true, message: 'Nhập tên thiết bị' }]}>
+            <AntInput placeholder="VD: AHU-02 Tòa nhà B" />
+          </Form.Item>
+          <Form.Item name="type" label="Loại thiết bị" rules={[{ required: true }]}>
+            <AntSelect>
+              <AntSelect.Option value="AHU">AHU</AntSelect.Option>
+              <AntSelect.Option value="FCU">FCU</AntSelect.Option>
+              <AntSelect.Option value="Chiller">Chiller</AntSelect.Option>
+              <AntSelect.Option value="Pump">Máy bơm</AntSelect.Option>
+              <AntSelect.Option value="Compressor">Máy nén</AntSelect.Option>
+              <AntSelect.Option value="Motor">Motor</AntSelect.Option>
+            </AntSelect>
+          </Form.Item>
+          <Form.Item name="location" label="Vị trí" rules={[{ required: true, message: 'Nhập vị trí' }]}>
+            <AntInput placeholder="VD: Tòa nhà A - Tầng 1" />
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {/* Edit Modal */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Chỉnh sửa thiết bị</DialogTitle>
-            <DialogDescription>
-              Cập nhật thông tin thiết bị
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Tên thiết bị</Label>
-              <Input 
-                id="edit-name" 
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-type">Loại</Label>
-              <Select 
-                value={formData.type} 
-                onValueChange={(v) => setFormData({ ...formData, type: v as AssetType })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="AHU">AHU</SelectItem>
-                  <SelectItem value="FCU">FCU</SelectItem>
-                  <SelectItem value="Chiller">Chiller</SelectItem>
-                  <SelectItem value="Pump">Máy bơm</SelectItem>
-                  <SelectItem value="Compressor">Máy nén</SelectItem>
-                  <SelectItem value="Motor">Motor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-location">Vị trí</Label>
-              <Input 
-                id="edit-location" 
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-status">Trạng thái</Label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(v) => setFormData({ ...formData, status: v as AssetStatus })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="online">Hoạt động</SelectItem>
-                  <SelectItem value="warning">Cảnh báo</SelectItem>
-                  <SelectItem value="critical">Nghiêm trọng</SelectItem>
-                  <SelectItem value="offline">Ngừng hoạt động</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto">Hủy</Button>
-            <Button onClick={handleEdit} className="w-full sm:w-auto">Lưu thay đổi</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Modal
+        title="Chỉnh sửa thiết bị"
+        open={isEditOpen}
+        centered
+        onCancel={() => { setIsEditOpen(false); setSelectedAsset(null); editForm.resetFields(); }}
+        footer={[
+          <Button key="cancel" variant="ghost" onClick={() => { setIsEditOpen(false); setSelectedAsset(null); editForm.resetFields(); }}>Hủy</Button>,
+          <Button key="save" onClick={handleEdit}>Lưu thay đổi</Button>
+        ]}
+      >
+        <Form form={editForm} layout="vertical">
+          <Form.Item name="name" label="Tên thiết bị" rules={[{ required: true, message: 'Nhập tên thiết bị' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item name="type" label="Loại" rules={[{ required: true }]}>
+            <AntSelect>
+              <AntSelect.Option value="AHU">AHU</AntSelect.Option>
+              <AntSelect.Option value="FCU">FCU</AntSelect.Option>
+              <AntSelect.Option value="Chiller">Chiller</AntSelect.Option>
+              <AntSelect.Option value="Pump">Máy bơm</AntSelect.Option>
+              <AntSelect.Option value="Compressor">Máy nén</AntSelect.Option>
+              <AntSelect.Option value="Motor">Motor</AntSelect.Option>
+            </AntSelect>
+          </Form.Item>
+          <Form.Item name="location" label="Vị trí" rules={[{ required: true, message: 'Nhập vị trí' }]}>
+            <AntInput />
+          </Form.Item>
+          <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
+            <AntSelect>
+              <AntSelect.Option value="online">Hoạt động</AntSelect.Option>
+              <AntSelect.Option value="warning">Cảnh báo</AntSelect.Option>
+              <AntSelect.Option value="critical">Nghiêm trọng</AntSelect.Option>
+              <AntSelect.Option value="offline">Ngừng hoạt động</AntSelect.Option>
+            </AntSelect>
+          </Form.Item>
+        </Form>
+      </Modal>
 
       {/* Delete Confirmation */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Xóa thiết bị</DialogTitle>
-            <DialogDescription>
-              Bạn có chắc muốn xóa "{selectedAsset?.name}"? Hành động này không thể hoàn tác.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} className="w-full sm:w-auto">Hủy</Button>
-            <Button variant="destructive" onClick={handleDelete} className="w-full sm:w-auto">Xóa</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Modal
+        title="Xóa thiết bị"
+        open={isDeleteOpen}
+        centered
+        maskStyle={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
+        onCancel={() => setIsDeleteOpen(false)}
+        footer={[
+          <Button key="cancel" variant="ghost" onClick={() => setIsDeleteOpen(false)}>Hủy</Button>,
+          <Button key="delete" variant="destructive" onClick={handleDelete}>Xóa</Button>
+        ]}
+      >
+        <p>Bạn có chắc muốn xóa "{selectedAsset?.name}"? Hành động này không thể hoàn tác.</p>
+      </Modal>
     </motion.div>
   );
 }

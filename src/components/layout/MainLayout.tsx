@@ -16,7 +16,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
       <Sidebar />
       <div className={cn(collapsed ? 'lg:pl-16' : 'lg:pl-64', 'transition-all duration-300')}>
         <Header />
-        <main className="p-4 sm:p-6 pt-20 lg:pt-6">
+        <main className="p-4 sm:p-6 lg:pt-6">
           {children}
         </main>
       </div>

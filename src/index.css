@@ -167,7 +167,7 @@
   }
 
   .kpi-card {
-    @apply bg-card/80 relative overflow-hidden backdrop-blur-xl border border-border/50 rounded-xl p-5 transition-all duration-300 shadow-lg;
+    @apply bg-card/80 relative overflow-hidden backdrop-blur-xl border border-border/50 rounded-xl p-5 transition-all duration-300 shadow-lg h-full flex flex-col;
   }
 
   .kpi-card::before {
