@@ -12,6 +12,7 @@ import { KPICard } from '@/components/dashboard/KPICard';
 import { CalendarView } from '@/components/dashboard/CalendarView';
 import { WOSourceChart } from '@/components/dashboard/WOSourceChart';
 import { RecentWorkOrdersTable } from '@/components/dashboard/RecentWorkOrdersTable';
+import { ExportMaintenancePlan } from '@/components/dashboard/ExportMaintenancePlan';
 import { mockDashboardStats, mockWorkOrders, mockAlerts } from '@/data/mockData';
 
 export default function Dashboard() {
@@ -23,11 +24,14 @@ export default function Dashboard() {
       transition={{ duration: 0.3 }}
     >
       {/* Page Header */}
-      <div>
-        <span className="text-xl sm:text-2xl font-bold">Bảng điều khiển bảo trì</span>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Tổng quan hoạt động bảo trì và tình trạng hệ thống
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <span className="text-xl sm:text-2xl font-bold">Bảng điều khiển bảo trì</span>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Tổng quan hoạt động bảo trì và tình trạng hệ thống
+          </p>
+        </div>
+        <ExportMaintenancePlan />
       </div>
 
       {/* KPI Cards */}

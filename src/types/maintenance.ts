@@ -117,3 +117,11 @@ export interface DashboardStats {
   manualCount: number;
   criticalAlerts: number;
 }
+
+export interface CalendarEvent {
+  date: string;
+  title: string;
+  type: 'TBM' | 'CBM';
+  assetId?: string;
+  assetName?: string;
+}

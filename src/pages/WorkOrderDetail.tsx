@@ -25,6 +25,7 @@ import { Label } from '@/components/ui/label';
 import { WOStatusBadge } from '@/components/workorder/WOStatusBadge';
 import { WOSourceBadge } from '@/components/workorder/WOSourceBadge';
 import { ChecklistComponent } from '@/components/workorder/ChecklistComponent';
+import { ImageUpload } from '@/components/workorder/ImageUpload';
 import { mockWorkOrders } from '@/data/mockData';
 import { useEffect, useState } from 'react';
 import { WorkOrder, ChecklistItem, WorkOrderPart } from '@/types/maintenance';
@@ -49,6 +50,7 @@ export default function WorkOrderDetail() {
   const [checklist, setChecklist] = useState<ChecklistItem[]>(workOrder?.checklist || []);
   const [notes, setNotes] = useState(workOrder?.notes || '');
   const [findings, setFindings] = useState(workOrder?.findings || '');
+  const [images, setImages] = useState<string[]>(workOrder?.images || []);
   const [parts, setParts] = useState<WorkOrderPart[]>(workOrder?.parts || []);
   const [estimatedCost, setEstimatedCost] = useState(workOrder?.estimatedCost || 0);
   const [actualCost, setActualCost] = useState(workOrder?.actualCost || 0);
@@ -61,6 +63,7 @@ export default function WorkOrderDetail() {
     setChecklist(workOrder?.checklist || []);
     setNotes(workOrder?.notes || '');
     setFindings(workOrder?.findings || '');
+    setImages(workOrder?.images || []);
     setParts(workOrder?.parts || []);
     setEstimatedCost(workOrder?.estimatedCost || 0);
     setActualCost(workOrder?.actualCost || 0);
@@ -71,6 +74,7 @@ export default function WorkOrderDetail() {
     return (
       notes !== (workOrder.notes || '') ||
       findings !== (workOrder.findings || '') ||
+      JSON.stringify(images) !== JSON.stringify(workOrder.images || []) ||
       JSON.stringify(checklist) !== JSON.stringify(workOrder.checklist || []) ||
       JSON.stringify(parts) !== JSON.stringify(workOrder.parts || []) ||
       estimatedCost !== (workOrder.estimatedCost || 0) ||
@@ -88,7 +92,7 @@ export default function WorkOrderDetail() {
   };
 
   const saveChanges = () => {
-    updateWorkOrder({ notes, findings, checklist, parts, estimatedCost, actualCost });
+    updateWorkOrder({ notes, findings, images, checklist, parts, estimatedCost, actualCost });
     toast.success('Đã lưu thay đổi');
   };
 
@@ -97,6 +101,7 @@ export default function WorkOrderDetail() {
     setChecklist(workOrder.checklist || []);
     setNotes(workOrder.notes || '');
     setFindings(workOrder.findings || '');
+    setImages(workOrder.images || []);
     setParts(workOrder.parts || []);
     setEstimatedCost(workOrder.estimatedCost || 0);
     setActualCost(workOrder.actualCost || 0);
@@ -312,26 +317,12 @@ export default function WorkOrderDetail() {
               </Card>
 
               <Card className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Ảnh đính kèm</h2>
-                  <Button variant="outline" size="sm" disabled={!isEditable}>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Tải ảnh lên
-                  </Button>
-                </div>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                  {workOrder.images && workOrder.images.length > 0 ? (
-                    workOrder.images.map((img, idx) => (
-                      <div key={idx} className="aspect-square bg-muted rounded-lg overflow-hidden">
-                        <img src={img} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
-                      </div>
-                    ))
-                  ) : (
-                    <div className="col-span-full text-center py-8 text-muted-foreground">
-                      Chưa có ảnh đính kèm
-                    </div>
-                  )}
-                </div>
+                <ImageUpload
+                  images={images}
+                  onImagesChange={setImages}
+                  disabled={!isEditable}
+                  maxImages={10}
+                />
               </Card>
             </TabsContent>
 
