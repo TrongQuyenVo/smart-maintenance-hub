@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Modal } from 'antd';
 import { cn } from '@/lib/utils';
-import { calendarEvents } from '@/data/mockData';
+import { calendarEvents, CalendarEvent } from '@/data/mockData';
 
 export function CalendarView() {
   // use real current date

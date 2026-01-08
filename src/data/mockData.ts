@@ -374,11 +374,19 @@ export const mockDashboardStats: DashboardStats = {
   criticalAlerts: 2,
 };
 
-export const calendarEvents = [
-  { date: '2026-01-10', title: 'AHU-01 Bảo trì hàng quý', type: 'TBM' as const },
-  { date: '2026-01-15', title: 'Kiểm tra Chiller-01', type: 'TBM' as const },
-  { date: '2026-01-20', title: 'FCU Khu A', type: 'TBM' as const },
-  { date: '2026-01-25', title: 'Hệ thống bơm', type: 'TBM' as const },
-  { date: '2026-02-01', title: 'FCU-101 Kiểm tra hàng tháng', type: 'TBM' as const },
-  { date: '2026-02-20', title: 'Chiller-01 Bảo trì hàng quý', type: 'TBM' as const },
+export interface CalendarEvent {
+  date: string;
+  title: string;
+  type: 'TBM' | 'CBM';
+  assetId?: string;
+  assetName?: string;
+}
+
+export const calendarEvents: CalendarEvent[] = [
+  { date: '2026-01-10', title: 'AHU-01 Bảo trì hàng quý', type: 'TBM', assetId: 'AST-001', assetName: 'AHU-01 Tòa nhà chính' },
+  { date: '2026-01-15', title: 'Kiểm tra Chiller-01', type: 'TBM', assetId: 'AST-002', assetName: 'Chiller-01 Trung tâm' },
+  { date: '2026-01-20', title: 'FCU Khu A', type: 'TBM', assetId: 'AST-003', assetName: 'FCU-101 Khu văn phòng' },
+  { date: '2026-01-25', title: 'Hệ thống bơm', type: 'TBM', assetId: 'AST-004', assetName: 'Bơm CW-01' },
+  { date: '2026-02-01', title: 'FCU-101 Kiểm tra hàng tháng', type: 'TBM', assetId: 'AST-003', assetName: 'FCU-101 Khu văn phòng' },
+  { date: '2026-02-20', title: 'Chiller-01 Bảo trì hàng quý', type: 'TBM', assetId: 'AST-002', assetName: 'Chiller-01 Trung tâm' },
 ];
