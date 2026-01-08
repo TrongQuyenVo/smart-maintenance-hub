@@ -424,7 +424,7 @@ export default function WorkOrderDetail() {
                   <Server className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Thiết bị</p>
+                  <span className="text-sm text-muted-foreground flex">Thiết bị</span>
                   <Link
                     to={`/assets/${workOrder.assetId}`}
                     className="font-medium hover:text-primary"
@@ -439,15 +439,15 @@ export default function WorkOrderDetail() {
                   <Calendar className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Ngày đến hạn</p>
-                  <p className="font-medium">
+                  <span className="text-sm text-muted-foreground flex">Ngày đến hạn</span>
+                  <span className="font-medium">
                     {new Date(workOrder.dueDate).toLocaleDateString('vi-VN', {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
                     })}
-                  </p>
+                  </span>
                 </div>
               </div>
 
@@ -456,8 +456,8 @@ export default function WorkOrderDetail() {
                   <User className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Người được giao</p>
-                  <p className="font-medium">{workOrder.assignee || 'Chưa phân công'}</p>
+                  <span className="text-sm text-muted-foreground flex">Người được giao</span>
+                  <span className="font-medium">{workOrder.assignee || 'Chưa phân công'}</span>
                 </div>
               </div>
 
@@ -466,10 +466,10 @@ export default function WorkOrderDetail() {
                   <Clock className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Ngày tạo</p>
-                  <p className="font-medium">
+                  <span className="text-sm text-muted-foreground flex">Ngày tạo</span>
+                  <span className="font-medium">
                     {new Date(workOrder.createdAt).toLocaleDateString('vi-VN')}
-                  </p>
+                  </span>
                 </div>
               </div>
 
@@ -479,10 +479,10 @@ export default function WorkOrderDetail() {
                     <Play className="w-5 h-5 text-success" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Bắt đầu</p>
-                    <p className="font-medium">
+                    <span className="text-sm text-muted-foreground flex">Bắt đầu</span>
+                    <span className="font-medium">
                       {new Date(workOrder.startedAt).toLocaleString('vi-VN')}
-                    </p>
+                    </span>
                   </div>
                 </div>
               )}
@@ -493,10 +493,10 @@ export default function WorkOrderDetail() {
                     <CheckCircle className="w-5 h-5 text-success" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Hoàn thành</p>
-                    <p className="font-medium">
+                    <span className="text-sm text-muted-foreground flex">Hoàn thành</span>
+                    <span className="font-medium">
                       {new Date(workOrder.completedAt).toLocaleString('vi-VN')}
-                    </p>
+                    </span>
                   </div>
                 </div>
               )}

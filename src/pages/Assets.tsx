@@ -175,7 +175,7 @@ export default function Assets() {
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
               <SelectItem value="online">Hoạt động</SelectItem>
               <SelectItem value="warning">Cảnh báo</SelectItem>
               <SelectItem value="critical">Nghiêm trọng</SelectItem>

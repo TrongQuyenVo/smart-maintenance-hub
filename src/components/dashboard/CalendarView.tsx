@@ -127,7 +127,7 @@ export function CalendarView() {
             <ChevronLeft className="w-4 h-4" />
           </Button>
           <span className="min-w-[100px] sm:min-w-[140px] text-center text-sm sm:text-base font-medium">
-            {monthNames[month]} {year}
+            {monthNames[month]} - {year}
           </span>
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={nextMonth}>
             <ChevronRight className="w-4 h-4" />

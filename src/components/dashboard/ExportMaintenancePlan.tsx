@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Download, FileSpreadsheet, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +12,7 @@ import {
 import { toast } from 'sonner';
 import { exportMaintenancePlanToExcel, getDateRange } from '@/utils/excelExport';
 import { mockWorkOrders, mockAssets, calendarEvents } from '@/data/mockData';
-import { format, addWeeks, addMonths, addQuarters } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { addWeeks, addMonths, addQuarters } from 'date-fns';
 
 type Period = 'week' | 'month' | 'quarter';
 
@@ -38,7 +36,7 @@ export function ExportMaintenancePlan() {
         referenceDate = addQuarters(referenceDate, offset);
       }
 
-      const result = exportMaintenancePlanToExcel(
+      const result = await exportMaintenancePlanToExcel(
         workOrders,
         calendarEvents,
         mockAssets,
@@ -64,19 +62,19 @@ export function ExportMaintenancePlan() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2" disabled={isExporting}>
+        <Button className="gap-2" disabled={isExporting}>
           <FileSpreadsheet className="w-4 h-4" />
           <span className="hidden sm:inline">Xuất kế hoạch</span>
           <Download className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
           Xuất kế hoạch bảo trì
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         {/* Current Period */}
         <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
           Kỳ hiện tại
@@ -109,7 +107,7 @@ export function ExportMaintenancePlan() {
           if (period === 'week') nextDate = addWeeks(nextDate, 1);
           else if (period === 'month') nextDate = addMonths(nextDate, 1);
           else nextDate = addQuarters(nextDate, 1);
-          
+
           const { label: rangeLabel } = getDateRange(period, nextDate);
           return (
             <DropdownMenuItem

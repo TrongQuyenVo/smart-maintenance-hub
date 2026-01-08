@@ -383,6 +383,7 @@ export interface CalendarEvent {
 }
 
 export const calendarEvents: CalendarEvent[] = [
+  { date: '2026-01-08', title: 'AHU-01 Bảo trì hàng quý', type: 'TBM', assetId: 'AST-001', assetName: 'AHU-01 Tòa nhà chính' },
   { date: '2026-01-10', title: 'AHU-01 Bảo trì hàng quý', type: 'TBM', assetId: 'AST-001', assetName: 'AHU-01 Tòa nhà chính' },
   { date: '2026-01-15', title: 'Kiểm tra Chiller-01', type: 'TBM', assetId: 'AST-002', assetName: 'Chiller-01 Trung tâm' },
   { date: '2026-01-20', title: 'FCU Khu A', type: 'TBM', assetId: 'AST-003', assetName: 'FCU-101 Khu văn phòng' },

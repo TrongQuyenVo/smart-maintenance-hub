@@ -183,7 +183,7 @@ export default function Alerts() {
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="all">Tất cả trạng thái</SelectItem>
             <SelectItem value="active">Chưa xác nhận</SelectItem>
             <SelectItem value="acknowledged">Đã xác nhận</SelectItem>
             <SelectItem value="resolved">Đã xử lý</SelectItem>

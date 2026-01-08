@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -204,7 +205,7 @@ export default function WorkOrders() {
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
               <SelectItem value="open">Đang mở</SelectItem>
               <SelectItem value="in_progress">Đang xử lý</SelectItem>
               <SelectItem value="done">Hoàn thành</SelectItem>
@@ -230,7 +231,7 @@ export default function WorkOrders() {
               <SelectValue placeholder="Người thực hiện" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tất cả</SelectItem>
+              <SelectItem value="all">Tất cả người thực hiện</SelectItem>
               {assignees.map(a => (
                 <SelectItem key={a} value={a}>{a}</SelectItem>
               ))}

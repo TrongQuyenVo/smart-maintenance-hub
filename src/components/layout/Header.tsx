@@ -1,6 +1,5 @@
-import { Bell, Search, User, Moon, Sun, Menu } from 'lucide-react';
+import { Bell, User, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { mockAlerts } from '@/data/mockData';
 import { useTheme } from '@/contexts/ThemeContext';
 import { motion } from 'framer-motion';
@@ -15,21 +14,12 @@ export function Header() {
         {/* Spacer for mobile menu button */}
         <div className="w-10 lg:hidden" />
 
-        {/* Search */}
-        <div className="relative hidden sm:block w-full max-w-xs lg:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Tìm kiếm thiết bị, lệnh công việc..."
-            className="pl-10 bg-muted/50 border-muted focus:bg-background"
-          />
-        </div>
+        <div className="hidden sm:block w-full max-w-xs lg:max-w-md" aria-hidden="true" />
 
         {/* Right Actions */}
         <div className="flex items-center gap-2 lg:gap-4">
-          {/* Mobile Search Button */}
-          <Button variant="ghost" size="icon" className="sm:hidden">
-            <Search className="w-5 h-5" />
-          </Button>
+          {/* Mobile Search removed - placeholder to preserve spacing */}
+          <div className="sm:hidden w-10" aria-hidden="true" />
 
           {/* Theme Toggle */}
           <motion.div whileTap={{ scale: 0.95 }}>
