@@ -51,6 +51,8 @@ export interface WorkOrder {
   priority: 'low' | 'medium' | 'high' | 'critical';
   createdAt: string;
   dueDate: string;
+  startedAt?: string;
+  pausedAt?: string;
   completedAt?: string;
   assignee?: string;
   triggerInfo?: {
@@ -61,7 +63,18 @@ export interface WorkOrder {
   };
   checklist: ChecklistItem[];
   notes?: string;
+  findings?: string;
   images?: string[];
+  parts?: WorkOrderPart[];
+  estimatedCost?: number;
+  actualCost?: number;
+}
+
+export interface WorkOrderPart {
+  id: string;
+  name: string;
+  quantity: number;
+  unitCost: number;
 }
 
 export interface ChecklistItem {

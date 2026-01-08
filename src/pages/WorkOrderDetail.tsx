@@ -6,19 +6,32 @@ import {
   User,
   ExternalLink,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Play,
+  Pause,
+  CheckCircle,
+  Upload,
+  Plus,
+  Trash2,
+  DollarSign,
+  Image as ImageIcon,
+  FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { WOStatusBadge } from '@/components/workorder/WOStatusBadge';
 import { WOSourceBadge } from '@/components/workorder/WOSourceBadge';
 import { ChecklistComponent } from '@/components/workorder/ChecklistComponent';
 import { mockWorkOrders } from '@/data/mockData';
 import { useEffect, useState } from 'react';
-import { WorkOrder, ChecklistItem } from '@/types/maintenance';
+import { WorkOrder, ChecklistItem, WorkOrderPart } from '@/types/maintenance';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Modal, Form, Input as AntInput, InputNumber } from 'antd';
 
 export default function WorkOrderDetail() {
   const { id } = useParams();
@@ -31,33 +44,106 @@ export default function WorkOrderDetail() {
     return list.find((wo: WorkOrder) => wo.id === id);
   });
 
-  const workOrder = localWorkOrder; // existing variable name used through the component
+  const workOrder = localWorkOrder;
 
   const [checklist, setChecklist] = useState<ChecklistItem[]>(workOrder?.checklist || []);
   const [notes, setNotes] = useState(workOrder?.notes || '');
+  const [findings, setFindings] = useState(workOrder?.findings || '');
+  const [parts, setParts] = useState<WorkOrderPart[]>(workOrder?.parts || []);
+  const [estimatedCost, setEstimatedCost] = useState(workOrder?.estimatedCost || 0);
+  const [actualCost, setActualCost] = useState(workOrder?.actualCost || 0);
+
+  // Parts modal
+  const [isPartModalOpen, setPartModalOpen] = useState(false);
+  const [partForm] = Form.useForm();
 
   useEffect(() => {
     setChecklist(workOrder?.checklist || []);
     setNotes(workOrder?.notes || '');
+    setFindings(workOrder?.findings || '');
+    setParts(workOrder?.parts || []);
+    setEstimatedCost(workOrder?.estimatedCost || 0);
+    setActualCost(workOrder?.actualCost || 0);
   }, [workOrder]);
 
-  const notesChanged = notes !== workOrder?.notes;
-  const checklistChanged = JSON.stringify(checklist) !== JSON.stringify(workOrder?.checklist || []);
+  const hasChanges = () => {
+    if (!workOrder) return false;
+    return (
+      notes !== (workOrder.notes || '') ||
+      findings !== (workOrder.findings || '') ||
+      JSON.stringify(checklist) !== JSON.stringify(workOrder.checklist || []) ||
+      JSON.stringify(parts) !== JSON.stringify(workOrder.parts || []) ||
+      estimatedCost !== (workOrder.estimatedCost || 0) ||
+      actualCost !== (workOrder.actualCost || 0)
+    );
+  };
 
-  const saveNotes = () => {
+  const updateWorkOrder = (updates: Partial<WorkOrder>) => {
     if (!workOrder) return;
     const raw = localStorage.getItem('workOrders');
     const list = raw ? JSON.parse(raw) : mockWorkOrders;
-    const updated = list.map((wo: WorkOrder) => wo.id === workOrder.id ? { ...wo, notes, checklist } : wo);
+    const updated = list.map((wo: WorkOrder) => wo.id === workOrder.id ? { ...wo, ...updates } : wo);
     localStorage.setItem('workOrders', JSON.stringify(updated));
     setLocalWorkOrder(updated.find((wo: WorkOrder) => wo.id === workOrder.id));
-    toast.success('Ghi chú đã được lưu');
   };
 
-  const resetNotes = () => {
+  const saveChanges = () => {
+    updateWorkOrder({ notes, findings, checklist, parts, estimatedCost, actualCost });
+    toast.success('Đã lưu thay đổi');
+  };
+
+  const resetChanges = () => {
     if (!workOrder) return;
     setChecklist(workOrder.checklist || []);
     setNotes(workOrder.notes || '');
+    setFindings(workOrder.findings || '');
+    setParts(workOrder.parts || []);
+    setEstimatedCost(workOrder.estimatedCost || 0);
+    setActualCost(workOrder.actualCost || 0);
+  };
+
+  const startWO = () => {
+    updateWorkOrder({ status: 'in_progress', startedAt: new Date().toISOString(), assignee: workOrder?.assignee || 'Tôi' });
+    toast.success('Đã bắt đầu lệnh công việc');
+  };
+
+  const pauseWO = () => {
+    updateWorkOrder({ pausedAt: new Date().toISOString() });
+    toast.info('Đã tạm dừng lệnh công việc');
+  };
+
+  const closeWO = () => {
+    if (!confirm('Xác nhận hoàn thành lệnh công việc này?')) return;
+    updateWorkOrder({ status: 'done', completedAt: new Date().toISOString() });
+    toast.success('Đã hoàn thành lệnh công việc');
+  };
+
+  const addPart = async () => {
+    try {
+      const values = await partForm.validateFields();
+      const newPart: WorkOrderPart = {
+        id: `PART-${Date.now().toString(36)}`,
+        name: values.name,
+        quantity: values.quantity,
+        unitCost: values.unitCost,
+      };
+      const updatedParts = [...parts, newPart];
+      setParts(updatedParts);
+      // Auto-update actual cost
+      const totalPartsCost = updatedParts.reduce((sum, p) => sum + (p.quantity * p.unitCost), 0);
+      setActualCost(totalPartsCost);
+      partForm.resetFields();
+      setPartModalOpen(false);
+    } catch (err) {
+      console.warn('Add part failed', err);
+    }
+  };
+
+  const removePart = (partId: string) => {
+    const updatedParts = parts.filter(p => p.id !== partId);
+    setParts(updatedParts);
+    const totalPartsCost = updatedParts.reduce((sum, p) => sum + (p.quantity * p.unitCost), 0);
+    setActualCost(totalPartsCost);
   };
 
   if (!workOrder) {
@@ -90,46 +176,45 @@ export default function WorkOrderDetail() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div className="flex items-start gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate('/work-orders')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="font-mono text-primary text-sm">{workOrder.id}</span>
               <WOSourceBadge source={workOrder.source} />
               <WOStatusBadge status={workOrder.status} />
             </div>
-            <span className="text-2xl font-bold">{workOrder.title}</span>
+            <h1 className="text-xl sm:text-2xl font-bold">{workOrder.title}</h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {workOrder?.status === 'open' && (
-            <Button variant="outline" onClick={() => {
-              // assign to 'Tôi' (local only)
-              if (!workOrder) return;
-              const raw = localStorage.getItem('workOrders');
-              const list = raw ? JSON.parse(raw) : mockWorkOrders;
-              const updated = list.map((wo: WorkOrder) => wo.id === workOrder.id ? { ...wo, assignee: 'Tôi', status: 'in_progress' } : wo);
-              localStorage.setItem('workOrders', JSON.stringify(updated));
-              setLocalWorkOrder(updated.find((wo: WorkOrder) => wo.id === workOrder.id));
-            }}>
-              Giao cho tôi
+        {/* Actions: Start | Pause | Close */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {workOrder.status === 'open' && (
+            <Button onClick={startWO} className="gap-2">
+              <Play className="w-4 h-4" />
+              Bắt đầu
             </Button>
           )}
-          {workOrder?.status === 'in_progress' && (
-            <Button onClick={() => {
-              if (!workOrder) return;
-              if (!confirm('Xác nhận hoàn thành lệnh công việc này?')) return;
-              const raw = localStorage.getItem('workOrders');
-              const list = raw ? JSON.parse(raw) : mockWorkOrders;
-              const updated = list.map((wo: WorkOrder) => wo.id === workOrder.id ? { ...wo, status: 'done', completedAt: new Date().toISOString() } : wo);
-              localStorage.setItem('workOrders', JSON.stringify(updated));
-              setLocalWorkOrder(updated.find((wo: WorkOrder) => wo.id === workOrder.id));
-            }}>
-              Hoàn thành lệnh
+          {workOrder.status === 'in_progress' && (
+            <>
+              <Button variant="outline" onClick={pauseWO} className="gap-2">
+                <Pause className="w-4 h-4" />
+                Tạm dừng
+              </Button>
+              <Button onClick={closeWO} className="gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Hoàn thành
+              </Button>
+            </>
+          )}
+          {workOrder.status === 'overdue' && (
+            <Button onClick={startWO} variant="destructive" className="gap-2">
+              <Play className="w-4 h-4" />
+              Bắt đầu (Quá hạn)
             </Button>
           )}
         </div>
@@ -173,31 +258,168 @@ export default function WorkOrderDetail() {
             </Card>
           )}
 
-          {/* Checklist */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Checklist công việc</h2>
-            <ChecklistComponent
-              items={checklist}
-              onUpdate={setChecklist}
-              readonly={!isEditable}
-            />
-          </Card>
+          {/* Tabs: Checklist | Findings | Parts & Cost */}
+          <Tabs defaultValue="checklist" className="space-y-4">
+            <TabsList className="bg-muted/50">
+              <TabsTrigger value="checklist" className="gap-2">
+                <FileText className="w-4 h-4" />
+                Checklist
+              </TabsTrigger>
+              <TabsTrigger value="findings" className="gap-2">
+                <ImageIcon className="w-4 h-4" />
+                Nhận xét & Ảnh
+              </TabsTrigger>
+              <TabsTrigger value="cost" className="gap-2">
+                <DollarSign className="w-4 h-4" />
+                Vật tư & Chi phí
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Notes */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Ghi chú & nhận xét</h2>
-            <Textarea
-              placeholder="Thêm ghi chú cho lệnh công việc..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="min-h-[120px] bg-muted/30"
-              disabled={!isEditable}
-            />
-            <div className="flex justify-end gap-2 mt-3">
-              <Button variant="ghost" onClick={resetNotes} disabled={!isEditable || (!notesChanged && !checklistChanged)}>Hủy</Button>
-              <Button onClick={saveNotes} disabled={!isEditable || (!notesChanged && !checklistChanged)}>Gửi</Button>
+            {/* Checklist Tab */}
+            <TabsContent value="checklist">
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Checklist công việc</h2>
+                <ChecklistComponent
+                  items={checklist}
+                  onUpdate={setChecklist}
+                  readonly={!isEditable}
+                />
+              </Card>
+            </TabsContent>
+
+            {/* Findings Tab */}
+            <TabsContent value="findings" className="space-y-4">
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Kết quả & Nhận xét</h2>
+                <Textarea
+                  placeholder="Mô tả kết quả kiểm tra, phát hiện lỗi, khuyến nghị..."
+                  value={findings}
+                  onChange={(e) => setFindings(e.target.value)}
+                  className="min-h-[120px] bg-muted/30"
+                  disabled={!isEditable}
+                />
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Ghi chú</h2>
+                <Textarea
+                  placeholder="Thêm ghi chú cho lệnh công việc..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="min-h-[100px] bg-muted/30"
+                  disabled={!isEditable}
+                />
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Ảnh đính kèm</h2>
+                  <Button variant="outline" size="sm" disabled={!isEditable}>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Tải ảnh lên
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {workOrder.images && workOrder.images.length > 0 ? (
+                    workOrder.images.map((img, idx) => (
+                      <div key={idx} className="aspect-square bg-muted rounded-lg overflow-hidden">
+                        <img src={img} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8 text-muted-foreground">
+                      Chưa có ảnh đính kèm
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </TabsContent>
+
+            {/* Parts & Cost Tab */}
+            <TabsContent value="cost" className="space-y-4">
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Vật tư sử dụng</h2>
+                  <Button variant="outline" size="sm" onClick={() => setPartModalOpen(true)} disabled={!isEditable}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Thêm vật tư
+                  </Button>
+                </div>
+
+                {parts.length > 0 ? (
+                  <div className="space-y-3">
+                    {parts.map((part) => (
+                      <div key={part.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <div>
+                          <p className="font-medium">{part.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {part.quantity} x {part.unitCost.toLocaleString('vi-VN')} VND
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-medium">
+                            {(part.quantity * part.unitCost).toLocaleString('vi-VN')} VND
+                          </span>
+                          {isEditable && (
+                            <Button variant="ghost" size="icon" onClick={() => removePart(part.id)}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Chưa có vật tư nào được ghi nhận
+                  </div>
+                )}
+              </Card>
+
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Chi phí</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Chi phí dự toán (VND)</Label>
+                    <Input
+                      type="number"
+                      value={estimatedCost}
+                      onChange={(e) => setEstimatedCost(Number(e.target.value))}
+                      disabled={!isEditable}
+                      className="bg-muted/30 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>Chi phí thực tế (VND)</Label>
+                    <Input
+                      type="number"
+                      value={actualCost}
+                      onChange={(e) => setActualCost(Number(e.target.value))}
+                      disabled={!isEditable}
+                      className="bg-muted/30 mt-1"
+                    />
+                  </div>
+                </div>
+                {actualCost > estimatedCost && estimatedCost > 0 && (
+                  <p className="text-sm text-warning mt-2">
+                    ⚠️ Chi phí thực tế vượt dự toán {((actualCost - estimatedCost) / estimatedCost * 100).toFixed(1)}%
+                  </p>
+                )}
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {/* Save/Cancel Buttons */}
+          {isEditable && (
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={resetChanges} disabled={!hasChanges()}>
+                Hủy thay đổi
+              </Button>
+              <Button onClick={saveChanges} disabled={!hasChanges()}>
+                Lưu thay đổi
+              </Button>
             </div>
-          </Card>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -259,6 +481,34 @@ export default function WorkOrderDetail() {
                   </p>
                 </div>
               </div>
+
+              {workOrder.startedAt && (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-success/20">
+                    <Play className="w-5 h-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Bắt đầu</p>
+                    <p className="font-medium">
+                      {new Date(workOrder.startedAt).toLocaleString('vi-VN')}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {workOrder.completedAt && (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-success/20">
+                    <CheckCircle className="w-5 h-5 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Hoàn thành</p>
+                    <p className="font-medium">
+                      {new Date(workOrder.completedAt).toLocaleString('vi-VN')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -275,8 +525,50 @@ export default function WorkOrderDetail() {
               {priorityLabels[workOrder.priority]}
             </p>
           </Card>
+
+          {/* Cost Summary */}
+          {(estimatedCost > 0 || actualCost > 0) && (
+            <Card className="p-6">
+              <h3 className="font-semibold mb-4">Tổng chi phí</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Dự toán:</span>
+                  <span className="font-mono">{estimatedCost.toLocaleString('vi-VN')} VND</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Thực tế:</span>
+                  <span className="font-mono font-medium">{actualCost.toLocaleString('vi-VN')} VND</span>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       </div>
+
+      {/* Add Part Modal */}
+      <Modal
+        title="Thêm vật tư"
+        open={isPartModalOpen}
+        onCancel={() => setPartModalOpen(false)}
+        footer={[
+          <Button key="cancel" variant="ghost" onClick={() => setPartModalOpen(false)}>Hủy</Button>,
+          <Button key="save" onClick={addPart}>Thêm</Button>
+        ]}
+      >
+        <Form form={partForm} layout="vertical">
+          <Form.Item name="name" label="Tên vật tư" rules={[{ required: true, message: 'Nhập tên vật tư' }]}>
+            <AntInput placeholder="VD: Bộ lọc khí, Dầu bôi trơn..." />
+          </Form.Item>
+          <div className="grid grid-cols-2 gap-4">
+            <Form.Item name="quantity" label="Số lượng" rules={[{ required: true }]}>
+              <InputNumber min={1} defaultValue={1} style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item name="unitCost" label="Đơn giá (VND)" rules={[{ required: true }]}>
+              <InputNumber min={0} defaultValue={0} style={{ width: '100%' }} />
+            </Form.Item>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 }

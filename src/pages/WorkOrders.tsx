@@ -23,6 +23,8 @@ export default function WorkOrders() {
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState<WOSource | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<WOStatus | 'all'>('all');
+  const [priorityFilter, setPriorityFilter] = useState<'all' | 'low' | 'medium' | 'high' | 'critical'>('all');
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
 
   // Work orders state (persisted to localStorage)
   const [workOrders, setWorkOrders] = useState(mockWorkOrders);
@@ -40,6 +42,9 @@ export default function WorkOrders() {
     localStorage.setItem('workOrders', JSON.stringify(workOrders));
   }, [workOrders]);
 
+  // Get unique assignees for filter
+  const assignees = Array.from(new Set(workOrders.map(wo => wo.assignee).filter(Boolean))) as string[];
+
   const filteredOrders = workOrders.filter(wo => {
     const matchesSearch =
       wo.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -48,8 +53,10 @@ export default function WorkOrders() {
 
     const matchesSource = sourceFilter === 'all' || wo.source === sourceFilter;
     const matchesStatus = statusFilter === 'all' || wo.status === statusFilter;
+    const matchesPriority = priorityFilter === 'all' || wo.priority === priorityFilter;
+    const matchesAssignee = assigneeFilter === 'all' || wo.assignee === assigneeFilter;
 
-    return matchesSearch && matchesSource && matchesStatus;
+    return matchesSearch && matchesSource && matchesStatus && matchesPriority && matchesAssignee;
   });
 
   const priorityColors = {
@@ -179,9 +186,9 @@ export default function WorkOrders() {
           />
         </div>
 
-        <div className="flex gap-2 sm:gap-4">
+        <div className="flex flex-wrap gap-2 sm:gap-4">
           <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(v as WOSource | 'all')}>
-            <SelectTrigger className="w-[110px] sm:w-[150px] bg-muted/50">
+            <SelectTrigger className="w-[100px] sm:w-[130px] bg-muted/50">
               <SelectValue placeholder="Nguồn" />
             </SelectTrigger>
             <SelectContent>
@@ -193,7 +200,7 @@ export default function WorkOrders() {
           </Select>
 
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as WOStatus | 'all')}>
-            <SelectTrigger className="w-[110px] sm:w-[150px] bg-muted/50">
+            <SelectTrigger className="w-[100px] sm:w-[130px] bg-muted/50">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
@@ -202,6 +209,31 @@ export default function WorkOrders() {
               <SelectItem value="in_progress">Đang xử lý</SelectItem>
               <SelectItem value="done">Hoàn thành</SelectItem>
               <SelectItem value="overdue">Quá hạn</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as any)}>
+            <SelectTrigger className="w-[100px] sm:w-[130px] bg-muted/50">
+              <SelectValue placeholder="Ưu tiên" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả ưu tiên</SelectItem>
+              <SelectItem value="critical">Khẩn cấp</SelectItem>
+              <SelectItem value="high">Cao</SelectItem>
+              <SelectItem value="medium">Trung bình</SelectItem>
+              <SelectItem value="low">Thấp</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+            <SelectTrigger className="w-[100px] sm:w-[140px] bg-muted/50">
+              <SelectValue placeholder="Người thực hiện" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả</SelectItem>
+              {assignees.map(a => (
+                <SelectItem key={a} value={a}>{a}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
