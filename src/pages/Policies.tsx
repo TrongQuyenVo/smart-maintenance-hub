@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Modal, Form, Input as AntInput, Select as AntSelect, Switch as AntSwitch } from 'antd';
-import { motion } from 'framer-motion';
+
+
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { mockTBMPolicies, mockCBMPolicies, mockAssets } from '@/data/mockData';
@@ -159,12 +160,6 @@ export default function Policies() {
   };
 
   return (
-    <motion.div
-          className="space-y-4 sm:space-y-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -533,6 +528,5 @@ export default function Policies() {
         </Form>
       </Modal>
     </div>
-    </motion.div>
   );
 }

@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Modal, Form, Input as AntInput, Select as AntSelect } from 'antd';
 import { AssetCard } from '@/components/assets/AssetCard';
-import { AdvancedFilters, FilterState } from '@/components/assets/AdvancedFilters';
 import { mockAssets } from '@/data/mockData';
 import { Asset, AssetType, AssetStatus } from '@/types/maintenance';
 import { cn } from '@/lib/utils';
@@ -29,15 +28,9 @@ export default function Assets() {
   const navigate = useNavigate();
   const [assets, setAssets] = useState<Asset[]>(mockAssets);
   const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState<AssetType | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<AssetStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  
-  // Advanced filters
-  const [advancedFilters, setAdvancedFilters] = useState<FilterState>({
-    types: [],
-    statuses: [],
-    floors: [],
-    systems: [],
-  });
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -64,43 +57,11 @@ export default function Assets() {
       asset.id.toLowerCase().includes(search.toLowerCase()) ||
       asset.location.toLowerCase().includes(search.toLowerCase());
 
-    // Advanced filters
-    const matchesType = advancedFilters.types.length === 0 || advancedFilters.types.includes(asset.type);
-    const matchesStatus = advancedFilters.statuses.length === 0 || advancedFilters.statuses.includes(asset.status);
-    
-    // Floor filter - check if location contains floor
-    const matchesFloor = advancedFilters.floors.length === 0 || 
-      advancedFilters.floors.some(floor => asset.location.toLowerCase().includes(floor.toLowerCase()));
-    
-    // System filter - map asset types to systems
-    const assetSystem = getAssetSystem(asset.type);
-    const matchesSystem = advancedFilters.systems.length === 0 || 
-      advancedFilters.systems.includes(assetSystem);
+    const matchesType = typeFilter === 'all' || asset.type === typeFilter;
+    const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
 
-    return matchesSearch && matchesType && matchesStatus && matchesFloor && matchesSystem;
+    return matchesSearch && matchesType && matchesStatus;
   });
-
-  // Map asset type to system
-  const getAssetSystem = (type: AssetType): string => {
-    const systemMap: Record<AssetType, string> = {
-      'AHU': 'HVAC',
-      'FCU': 'HVAC',
-      'Chiller': 'HVAC',
-      'Pump': 'Nước',
-      'Compressor': 'Năng lượng',
-      'Motor': 'Điện',
-    };
-    return systemMap[type] || 'Khác';
-  };
-
-  const handleClearFilters = () => {
-    setAdvancedFilters({
-      types: [],
-      statuses: [],
-      floors: [],
-      systems: [],
-    });
-  };
 
   const handleCreate = async () => {
     try {
@@ -177,7 +138,6 @@ export default function Assets() {
       className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -206,11 +166,32 @@ export default function Assets() {
         </div>
 
         <div className="flex gap-2 sm:gap-4">
-          <AdvancedFilters 
-            filters={advancedFilters}
-            onFiltersChange={setAdvancedFilters}
-            onClear={handleClearFilters}
-          />
+          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as AssetType | 'all')}>
+            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
+              <SelectValue placeholder="Loại" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả loại</SelectItem>
+              <SelectItem value="AHU">AHU</SelectItem>
+              <SelectItem value="FCU">FCU</SelectItem>
+              <SelectItem value="Chiller">Chiller</SelectItem>
+              <SelectItem value="Pump">Máy bơm</SelectItem>
+              <SelectItem value="Compressor">Máy nén</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as AssetStatus | 'all')}>
+            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tất cả trạng thái</SelectItem>
+              <SelectItem value="online">Hoạt động</SelectItem>
+              <SelectItem value="warning">Cảnh báo</SelectItem>
+              <SelectItem value="critical">Nghiêm trọng</SelectItem>
+              <SelectItem value="offline">Ngừng</SelectItem>
+            </SelectContent>
+          </Select>
 
           <div className="hidden sm:flex items-center border border-border rounded-lg p-1">
             <Button
@@ -252,7 +233,7 @@ export default function Assets() {
               key={asset.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ delay: index * 0.05 }}
               className="relative group"
             >
               <AssetCard
