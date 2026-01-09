@@ -381,8 +381,8 @@ export default function WorkOrderDetail() {
                     <InputNumber
                       min={0}
                       value={estimatedCost}
-                      formatter={(value) => value ? String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                      parser={(value) => value ? Number(String(value).replace(/\./g, '')) : 0}
+                      formatter={(value) => value ? value.toString().replaceAll(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                      parser={(value) => value ? value.toString().replaceAll('.', '') : '' as unknown as 0}
                       onChange={(v) => setEstimatedCost(Number(v || 0))}
                       disabled={!isEditable}
                       className="bg-muted/30 mt-1"
@@ -394,8 +394,8 @@ export default function WorkOrderDetail() {
                     <InputNumber
                       min={0}
                       value={actualCost}
-                      formatter={(value) => value ? String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                      parser={(value) => value ? Number(String(value).replace(/\./g, '')) : 0}
+                      formatter={(value) => value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                      parser={(value) => value ? value.toString().replace(/\./g, '') : ''}
                       onChange={(v) => setActualCost(Number(v || 0))}
                       disabled={!isEditable}
                       className="bg-muted/30 mt-1"
@@ -569,8 +569,8 @@ export default function WorkOrderDetail() {
             <Form.Item name="unitCost" label="Đơn giá (VND)" rules={[{ required: true, message: 'Nhập đơn giá' }]}>
               <InputNumber
                 min={0}
-                formatter={(value) => value ? String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                parser={(value: string | undefined) => value ? Number(String(value).replace(/\./g, '')) : 0}
+                formatter={(value) => value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                parser={(value) => value ? value.toString().replace(/\./g, '') : ''}
                 style={{ width: '100%' }}
               />
             </Form.Item>
