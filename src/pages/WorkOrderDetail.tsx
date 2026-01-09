@@ -10,7 +10,6 @@ import {
   Play,
   Pause,
   CheckCircle,
-  Upload,
   Plus,
   Trash2,
   DollarSign,
@@ -20,7 +19,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { WOStatusBadge } from '@/components/workorder/WOStatusBadge';
 import { WOSourceBadge } from '@/components/workorder/WOSourceBadge';
@@ -52,12 +50,12 @@ export default function WorkOrderDetail() {
   const [findings, setFindings] = useState(workOrder?.findings || '');
   const [images, setImages] = useState<string[]>(workOrder?.images || []);
   const [parts, setParts] = useState<WorkOrderPart[]>(workOrder?.parts || []);
-  const [estimatedCost, setEstimatedCost] = useState(workOrder?.estimatedCost || 0);
-  const [actualCost, setActualCost] = useState(workOrder?.actualCost || 0);
+  const [estimatedCost, setEstimatedCost] = useState<number | undefined>(workOrder?.estimatedCost ? workOrder.estimatedCost : undefined);
+  const [actualCost, setActualCost] = useState<number | undefined>(workOrder?.actualCost ? workOrder.actualCost : undefined);
 
   // Parts modal
   const [isPartModalOpen, setPartModalOpen] = useState(false);
-  const [partForm] = Form.useForm();
+  const [partForm] = Form.useForm<{ name: string; quantity: number; unitCost: number }>();
 
   useEffect(() => {
     setChecklist(workOrder?.checklist || []);
@@ -65,8 +63,8 @@ export default function WorkOrderDetail() {
     setFindings(workOrder?.findings || '');
     setImages(workOrder?.images || []);
     setParts(workOrder?.parts || []);
-    setEstimatedCost(workOrder?.estimatedCost || 0);
-    setActualCost(workOrder?.actualCost || 0);
+    setEstimatedCost(workOrder?.estimatedCost ? workOrder.estimatedCost : undefined);
+    setActualCost(workOrder?.actualCost ? workOrder.actualCost : undefined);
   }, [workOrder]);
 
   const hasChanges = () => {
@@ -77,8 +75,8 @@ export default function WorkOrderDetail() {
       JSON.stringify(images) !== JSON.stringify(workOrder.images || []) ||
       JSON.stringify(checklist) !== JSON.stringify(workOrder.checklist || []) ||
       JSON.stringify(parts) !== JSON.stringify(workOrder.parts || []) ||
-      estimatedCost !== (workOrder.estimatedCost || 0) ||
-      actualCost !== (workOrder.actualCost || 0)
+      (estimatedCost ?? 0) !== (workOrder.estimatedCost ?? 0) ||
+      (actualCost ?? 0) !== (workOrder.actualCost ?? 0)
     );
   };
 
@@ -103,8 +101,8 @@ export default function WorkOrderDetail() {
     setFindings(workOrder.findings || '');
     setImages(workOrder.images || []);
     setParts(workOrder.parts || []);
-    setEstimatedCost(workOrder.estimatedCost || 0);
-    setActualCost(workOrder.actualCost || 0);
+    setEstimatedCost(workOrder.estimatedCost ? workOrder.estimatedCost : undefined);
+    setActualCost(workOrder.actualCost ? workOrder.actualCost : undefined);
   };
 
   const startWO = () => {
@@ -125,7 +123,7 @@ export default function WorkOrderDetail() {
 
   const addPart = async () => {
     try {
-      const values = await partForm.validateFields();
+      const values = await partForm.validateFields() as { name: string; quantity: number; unitCost: number };
       const newPart: WorkOrderPart = {
         id: `PART-${Date.now().toString(36)}`,
         name: values.name,
@@ -136,7 +134,7 @@ export default function WorkOrderDetail() {
       setParts(updatedParts);
       // Auto-update actual cost
       const totalPartsCost = updatedParts.reduce((sum, p) => sum + (p.quantity * p.unitCost), 0);
-      setActualCost(totalPartsCost);
+      setActualCost(totalPartsCost > 0 ? totalPartsCost : undefined);
       partForm.resetFields();
       setPartModalOpen(false);
     } catch (err) {
@@ -149,7 +147,7 @@ export default function WorkOrderDetail() {
     const updatedParts = parts.filter(p => p.id !== partId);
     setParts(updatedParts);
     const totalPartsCost = updatedParts.reduce((sum, p) => sum + (p.quantity * p.unitCost), 0);
-    setActualCost(totalPartsCost);
+    setActualCost(totalPartsCost > 0 ? totalPartsCost : undefined);
   };
 
   if (!workOrder) {
@@ -335,7 +333,7 @@ export default function WorkOrderDetail() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => { partForm.setFieldsValue({ quantity: 1, unitCost: 0 }); setPartModalOpen(true); }}
+                    onClick={() => { partForm.setFieldsValue({ quantity: 1 }); setPartModalOpen(true); }}
                     disabled={!isEditable}
                   >
                     <Plus className="w-4 h-4 mr-2" />
@@ -378,12 +376,13 @@ export default function WorkOrderDetail() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Chi phí dự toán (VND)</Label>
-                    <InputNumber
+                    <InputNumber<number>
                       min={0}
+                      placeholder="Nhập chi phí dự toán"
                       value={estimatedCost}
-                      formatter={(value) => value ? value.toString().replaceAll(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                      parser={(value) => value ? value.toString().replaceAll('.', '') : '' as unknown as 0}
-                      onChange={(v) => setEstimatedCost(Number(v || 0))}
+                      formatter={(value: number | string | undefined) => value ? String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                      parser={(value: string | number | undefined) => value ? Number(String(value).replace(/\./g, '')) : 0}
+                      onChange={(v) => setEstimatedCost(v === null || v === undefined ? undefined : Number(v))}
                       disabled={!isEditable}
                       className="bg-muted/30 mt-1"
                       style={{ width: '100%' }}
@@ -391,12 +390,13 @@ export default function WorkOrderDetail() {
                   </div>
                   <div>
                     <Label>Chi phí thực tế (VND)</Label>
-                    <InputNumber
+                    <InputNumber<number>
                       min={0}
+                      placeholder="Nhập chi phí thực tế"
                       value={actualCost}
-                      formatter={(value) => value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                      parser={(value) => value ? value.toString().replace(/\./g, '') : ''}
-                      onChange={(v) => setActualCost(Number(v || 0))}
+                      formatter={(value: number | string | undefined) => value ? String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                      parser={(value: string | number | undefined) => value ? Number(String(value).replace(/\./g, '')) : 0}
+                      onChange={(v) => setActualCost(v === null || v === undefined ? undefined : Number(v))}
                       disabled={!isEditable}
                       className="bg-muted/30 mt-1"
                       style={{ width: '100%' }}
@@ -558,19 +558,20 @@ export default function WorkOrderDetail() {
           <Button key="save" onClick={addPart}>Thêm</Button>
         ]}
       >
-        <Form form={partForm} layout="vertical" initialValues={{ quantity: 1, unitCost: 0 }}>
+        <Form form={partForm} layout="vertical" initialValues={{ quantity: 1 as number }}>
           <Form.Item name="name" label="Tên vật tư" rules={[{ required: true, message: 'Nhập tên vật tư' }]}>
             <AntInput placeholder="VD: Bộ lọc khí, Dầu bôi trơn..." />
           </Form.Item>
           <div className="grid grid-cols-2 gap-4">
             <Form.Item name="quantity" label="Số lượng" rules={[{ required: true, message: 'Nhập số lượng' }]}>
-              <InputNumber min={1} style={{ width: '100%' }} />
+              <InputNumber<number> min={1} style={{ width: '100%' }} />
             </Form.Item>
             <Form.Item name="unitCost" label="Đơn giá (VND)" rules={[{ required: true, message: 'Nhập đơn giá' }]}>
-              <InputNumber
+              <InputNumber<number>
                 min={0}
-                formatter={(value) => value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
-                parser={(value) => value ? value.toString().replace(/\./g, '') : ''}
+                placeholder="Nhập đơn giá"
+                formatter={(value: number | string | undefined) => value ? String(value).replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}
+                parser={(value: string | number | undefined) => value ? Number(String(value).replace(/\./g, '')) : 0}
                 style={{ width: '100%' }}
               />
             </Form.Item>
