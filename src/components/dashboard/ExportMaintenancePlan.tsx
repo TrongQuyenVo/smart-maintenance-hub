@@ -64,7 +64,7 @@ export function ExportMaintenancePlan() {
       <DropdownMenuTrigger asChild>
         <Button className="gap-2" disabled={isExporting}>
           <FileSpreadsheet className="w-4 h-4" />
-          <span className="hidden sm:inline">Xuất kế hoạch</span>
+          <span className="inline whitespace-nowrap">Xuất kế hoạch</span>
           <Download className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>

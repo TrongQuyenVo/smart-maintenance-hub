@@ -142,14 +142,15 @@ export default function Alerts() {
       className="space-y-4 sm:space-y-6"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="text-xl sm:text-2xl font-bold">Trung tâm cảnh báo</span>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <span className="text-xl sm:text-2xl font-bold flex">Trung tâm cảnh báo</span>
+          <span className="text-sm sm:text-base text-muted-foreground">
             Giám sát và quản lý các vi phạm ngưỡng CBM
-          </p>
+          </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg bg-destructive/10 border border-destructive/30">
@@ -203,7 +204,7 @@ export default function Alerts() {
               key={alert.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              transition={{ duration: 0.3 }}
             >
               <Card
                 className={cn(
@@ -256,12 +257,12 @@ export default function Alerts() {
                       {alert.assetName}
                     </h3>
 
-                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    <span className="text-xs sm:text-sm text-muted-foreground mt-1">
                       {metricLabels[alert.metric]}:{' '}
                       <span className="font-mono text-foreground">{alert.value}</span>
                       {' vượt ngưỡng '}
                       <span className="font-mono text-warning">{alert.threshold}</span>
-                    </p>
+                    </span>
 
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 sm:mt-3 text-[10px] sm:text-xs text-muted-foreground">
                       <span>

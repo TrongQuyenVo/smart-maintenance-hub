@@ -14,12 +14,14 @@ import Policies from "./pages/Policies";
 import Telemetry from "./pages/Telemetry";
 import Alerts from "./pages/Alerts";
 import NotFound from "./pages/NotFound";
+import AntdThemeProvider from "./contexts/AntdThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+      <AntdThemeProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -39,6 +41,7 @@ const App = () => (
           </MainLayout>
         </BrowserRouter>
       </TooltipProvider>
+      </AntdThemeProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

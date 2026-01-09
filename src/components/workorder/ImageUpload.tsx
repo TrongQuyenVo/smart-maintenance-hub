@@ -27,7 +27,7 @@ export function ImageUpload({ images, onImagesChange, disabled = false, maxImage
     }
 
     const filesToProcess = Array.from(files).slice(0, remainingSlots);
-    
+
     filesToProcess.forEach(file => {
       if (!file.type.startsWith('image/')) {
         toast.error(`${file.name} không phải là file ảnh`);
@@ -68,9 +68,9 @@ export function ImageUpload({ images, onImagesChange, disabled = false, maxImage
           <span className="text-sm text-muted-foreground">
             {images.length}/{maxImages} ảnh
           </span>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             disabled={disabled || images.length >= maxImages}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -89,15 +89,15 @@ export function ImageUpload({ images, onImagesChange, disabled = false, maxImage
       </div>
 
       {images.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {images.map((img, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className="relative aspect-square bg-muted rounded-lg overflow-hidden group"
             >
-              <img 
-                src={img} 
-                alt={`Ảnh ${idx + 1}`} 
+              <img
+                src={img}
+                alt={`Ảnh ${idx + 1}`}
                 className="w-full h-full object-cover"
               />
               {/* Overlay on hover */}
@@ -136,9 +136,9 @@ export function ImageUpload({ images, onImagesChange, disabled = false, maxImage
           <ImageIcon className="w-12 h-12 text-muted-foreground/40 mb-3" />
           <p className="text-muted-foreground text-sm">Chưa có ảnh đính kèm</p>
           {!disabled && (
-            <Button 
-              variant="link" 
-              size="sm" 
+            <Button
+              variant="link"
+              size="sm"
               className="mt-2"
               onClick={() => fileInputRef.current?.click()}
             >
@@ -153,9 +153,9 @@ export function ImageUpload({ images, onImagesChange, disabled = false, maxImage
         <DialogContent className="max-w-4xl p-0 overflow-hidden">
           <DialogTitle className="sr-only">Xem ảnh</DialogTitle>
           {previewImage && (
-            <img 
-              src={previewImage} 
-              alt="Preview" 
+            <img
+              src={previewImage}
+              alt="Preview"
               className="w-full h-auto max-h-[80vh] object-contain"
             />
           )}

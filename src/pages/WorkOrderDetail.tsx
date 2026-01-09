@@ -264,16 +264,16 @@ export default function WorkOrderDetail() {
 
           {/* Tabs: Checklist | Findings | Parts & Cost */}
           <Tabs defaultValue="checklist" className="space-y-4">
-            <TabsList className="bg-muted/50">
-              <TabsTrigger value="checklist" className="gap-2">
+            <TabsList className="bg-muted/50 p-1 w-full overflow-x-auto flex-nowrap whitespace-nowrap -mx-1 justify-start pl-1" style={{ touchAction: 'pan-x' }}>
+              <TabsTrigger value="checklist" className="inline-flex gap-2 min-w-max mx-1">
                 <FileText className="w-4 h-4" />
                 Checklist
               </TabsTrigger>
-              <TabsTrigger value="findings" className="gap-2">
+              <TabsTrigger value="findings" className="inline-flex gap-2 min-w-max mx-1">
                 <ImageIcon className="w-4 h-4" />
                 Nhận xét & Ảnh
               </TabsTrigger>
-              <TabsTrigger value="cost" className="gap-2">
+              <TabsTrigger value="cost" className="inline-flex gap-2 min-w-max mx-1">
                 <DollarSign className="w-4 h-4" />
                 Vật tư & Chi phí
               </TabsTrigger>
@@ -562,7 +562,7 @@ export default function WorkOrderDetail() {
           <Form.Item name="name" label="Tên vật tư" rules={[{ required: true, message: 'Nhập tên vật tư' }]}>
             <AntInput placeholder="VD: Bộ lọc khí, Dầu bôi trơn..." />
           </Form.Item>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Form.Item name="quantity" label="Số lượng" rules={[{ required: true, message: 'Nhập số lượng' }]}>
               <InputNumber<number> min={1} style={{ width: '100%' }} />
             </Form.Item>

@@ -143,7 +143,7 @@ export default function WorkOrders() {
             </AntSelect>
           </Form.Item>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Form.Item name="source" label="Nguồn" rules={[{ required: true }]}>
               <AntSelect>
                 <AntSelect.Option value="TBM">TBM</AntSelect.Option>
@@ -161,7 +161,7 @@ export default function WorkOrders() {
             </Form.Item>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Form.Item name="dueDate" label="Hạn">
               <AntInput type="date" />
             </Form.Item>
@@ -197,9 +197,9 @@ export default function WorkOrders() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 sm:gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-4">
           <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(v as WOSource | 'all')}>
-            <SelectTrigger className="w-[100px] sm:w-[130px] bg-muted/50">
+            <SelectTrigger className="w-full sm:w-[130px] bg-muted/50">
               <SelectValue placeholder="Nguồn" />
             </SelectTrigger>
             <SelectContent>
@@ -211,7 +211,7 @@ export default function WorkOrders() {
           </Select>
 
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as WOStatus | 'all')}>
-            <SelectTrigger className="w-[100px] sm:w-[130px] bg-muted/50">
+            <SelectTrigger className="w-full sm:w-[130px] bg-muted/50">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
@@ -224,7 +224,7 @@ export default function WorkOrders() {
           </Select>
 
           <Select value={priorityFilter} onValueChange={(v) => setPriorityFilter(v as any)}>
-            <SelectTrigger className="w-[100px] sm:w-[130px] bg-muted/50">
+            <SelectTrigger className="w-full sm:w-[130px] bg-muted/50">
               <SelectValue placeholder="Ưu tiên" />
             </SelectTrigger>
             <SelectContent>
@@ -237,7 +237,7 @@ export default function WorkOrders() {
           </Select>
 
           <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
-            <SelectTrigger className="w-[100px] sm:w-[140px] bg-muted/50">
+            <SelectTrigger className="w-full sm:w-[140px] bg-muted/50">
               <SelectValue placeholder="Người thực hiện" />
             </SelectTrigger>
             <SelectContent>

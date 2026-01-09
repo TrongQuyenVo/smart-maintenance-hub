@@ -65,8 +65,8 @@ export default function AssetDetail() {
       transition={{ duration: 0.3 }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-start gap-4 w-full">
           <Button variant="ghost" size="icon" onClick={() => navigate('/assets')}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
@@ -84,7 +84,7 @@ export default function AssetDetail() {
           </div>
         </div>
 
-        <Button onClick={() => navigate(`/work-orders?asset=${asset.id}`)}>
+        <Button className="w-full sm:w-auto mt-3 sm:mt-0" onClick={() => navigate(`/work-orders?asset=${asset.id}`)}>
           <Plus className="w-4 h-4 mr-2" />
           Tạo lệnh công việc
         </Button>
@@ -92,20 +92,20 @@ export default function AssetDetail() {
 
       {/* Tabs - SC02 */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-muted/50 p-1">
-          <TabsTrigger value="overview" className="gap-2">
+        <TabsList className="bg-muted/50 p-1 w-full overflow-x-auto flex-nowrap whitespace-nowrap -mx-1 justify-start pl-1" style={{ touchAction: 'pan-x' }}>
+          <TabsTrigger value="overview" className="inline-flex gap-2 min-w-max mx-1">
             <Server className="w-4 h-4" />
             Tổng quan
           </TabsTrigger>
-          <TabsTrigger value="maintenance" className="gap-2">
+          <TabsTrigger value="maintenance" className="inline-flex gap-2 min-w-max mx-1">
             <Wrench className="w-4 h-4" />
             Bảo trì
           </TabsTrigger>
-          <TabsTrigger value="telemetry" className="gap-2">
+          <TabsTrigger value="telemetry" className="inline-flex gap-2 min-w-max mx-1">
             <Activity className="w-4 h-4" />
             Số liệu
           </TabsTrigger>
-          <TabsTrigger value="docs" className="gap-2">
+          <TabsTrigger value="docs" className="inline-flex gap-2 min-w-max mx-1">
             <FileText className="w-4 h-4" />
             Tài liệu
           </TabsTrigger>
@@ -120,7 +120,7 @@ export default function AssetDetail() {
                 <Settings className="w-5 h-5 text-primary" />
                 Thông số kỹ thuật
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Object.entries(asset.specifications).map(([key, value]) => (
                   <div key={key} className="p-3 rounded-lg bg-muted/30">
                     <p className="text-sm text-muted-foreground">{key}</p>

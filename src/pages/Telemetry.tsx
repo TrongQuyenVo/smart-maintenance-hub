@@ -124,8 +124,8 @@ export default function Telemetry() {
               <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="font-semibold text-sm sm:text-base truncate">{asset.name}</h2>
-              <p className="text-xs sm:text-sm text-muted-foreground truncate">{asset.location}</p>
+              <span className="font-semibold text-sm sm:text-base truncate flex">{asset.name}</span>
+              <span className="text-xs sm:text-sm text-muted-foreground truncate">{asset.location}</span>
             </div>
             <div className={cn(
               'px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium',
@@ -145,11 +145,11 @@ export default function Telemetry() {
 
       {/* Metric Tabs */}
       <Tabs value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricType)}>
-        <TabsList className="bg-muted/50 p-1 w-full sm:w-auto overflow-x-auto flex-nowrap">
+        <TabsList className="bg-muted/50 p-1 w-full sm:w-auto overflow-x-auto flex-nowrap whitespace-nowrap -mx-1 justify-start pl-1" style={{ touchAction: 'pan-x' }}>
           {metrics.map(metric => {
             const Icon = metric.icon;
             return (
-              <TabsTrigger key={metric.value} value={metric.value} className="gap-1 sm:gap-2 text-xs sm:text-sm flex-shrink-0">
+              <TabsTrigger key={metric.value} value={metric.value} className="inline-flex gap-1 sm:gap-2 text-xs sm:text-sm flex-shrink-0 min-w-max mx-1">
                 <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="ml-2">{metric.label}</span>
               </TabsTrigger>
@@ -164,18 +164,18 @@ export default function Telemetry() {
                 <div className="flex items-center gap-2 sm:gap-3">
                   <metric.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   <div>
-                    <h3 className="text-base sm:text-lg font-semibold">Xu hướng {metric.label}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
+                    <span className="text-base sm:text-lg font-semibold flex">Xu hướng {metric.label}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
                       {timeRange} giờ qua
-                    </p>
+                    </span>
                   </div>
                 </div>
                 {cbmPolicy && (
                   <div className="text-left sm:text-right">
-                    <p className="text-xs sm:text-sm text-muted-foreground">Ngưỡng CBM</p>
-                    <p className="font-mono text-base sm:text-lg text-warning">
+                    <span className="text-xs sm:text-sm text-muted-foreground flex">Ngưỡng CBM</span>
+                    <span className="font-mono text-base sm:text-lg text-warning">
                       {cbmPolicy.threshold} {metric.unit}
-                    </p>
+                    </span>
                   </div>
                 )}
               </div>
@@ -192,7 +192,7 @@ export default function Telemetry() {
       </Tabs>
 
       {/* Live Values */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {metrics.map(metric => {
           const Icon = metric.icon;
           const value = liveValues[metric.value];

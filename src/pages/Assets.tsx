@@ -166,9 +166,9 @@ export default function Assets() {
           />
         </div>
 
-        <div className="flex gap-2 sm:gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
           <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as AssetType | 'all')}>
-            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
+            <SelectTrigger className="w-full sm:w-[150px] bg-muted/50">
               <SelectValue placeholder="Loại" />
             </SelectTrigger>
             <SelectContent>
@@ -182,7 +182,7 @@ export default function Assets() {
           </Select>
 
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as AssetStatus | 'all')}>
-            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
+            <SelectTrigger className="w-full sm:w-[150px] bg-muted/50">
               <SelectValue placeholder="Trạng thái" />
             </SelectTrigger>
             <SelectContent>
