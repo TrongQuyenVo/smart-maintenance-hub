@@ -1,18 +1,17 @@
-import { useState } from 'react';
 import {
-  ClipboardList,
   AlertCircle,
   Clock,
-  CheckCircle,
   AlertTriangle,
   Activity
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { KPICard } from '@/components/dashboard/KPICard';
+import { KPITargetCard } from '@/components/dashboard/KPITargetCard';
 import { CalendarView } from '@/components/dashboard/CalendarView';
 import { WOSourceChart } from '@/components/dashboard/WOSourceChart';
 import { RecentWorkOrdersTable } from '@/components/dashboard/RecentWorkOrdersTable';
 import { ExportMaintenancePlan } from '@/components/dashboard/ExportMaintenancePlan';
+import { CostForecastChart } from '@/components/dashboard/CostForecastChart';
 import { mockDashboardStats, mockWorkOrders, mockAlerts } from '@/data/mockData';
 
 export default function Dashboard() {
@@ -26,16 +25,15 @@ export default function Dashboard() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <span className="text-xl sm:text-2xl font-bold">Bảng điều khiển bảo trì</span>
+          <span className="text-xl sm:text-2xl font-bold">Trung tâm điều hành thông minh (IOC)</span>
           <p className="text-sm sm:text-base text-muted-foreground">
-            Tổng quan hoạt động bảo trì và tình trạng hệ thống
+            Giám sát tổng quan hoạt động bảo trì và hiệu quả vận hành
           </p>
         </div>
         <ExportMaintenancePlan />
       </div>
 
       {/* KPI Cards */}
-      {/* derive KPI numbers from mock data (keeps dashboard in sync with state) */}
       {(() => {
         const openWO = mockWorkOrders.filter(wo => wo.status === 'open').length;
         const inProgressWO = mockWorkOrders.filter(wo => wo.status === 'in_progress').length;
@@ -83,6 +81,12 @@ export default function Dashboard() {
           </div>
         );
       })()}
+
+      {/* KPI Targets Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-4 sm:gap-6">
+        <KPITargetCard />
+        <CostForecastChart />
+      </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 sm:gap-6">
