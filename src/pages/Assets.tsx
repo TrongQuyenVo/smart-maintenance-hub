@@ -1,15 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Search, Plus, Grid, List, MoreVertical, Pencil, Trash } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Modal, Form, Input as AntInput, Select as AntSelect } from 'antd';
 import { AssetCard } from '@/components/assets/AssetCard';
+import { AdvancedFilters, FilterConfig } from '@/components/assets/AdvancedFilters';
 import { mockAssets } from '@/data/mockData';
 import { Asset, AssetType, AssetStatus } from '@/types/maintenance';
 import { cn } from '@/lib/utils';
@@ -28,9 +22,13 @@ export default function Assets() {
   const navigate = useNavigate();
   const [assets, setAssets] = useState<Asset[]>(mockAssets);
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState<AssetType | 'all'>('all');
-  const [statusFilter, setStatusFilter] = useState<AssetStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [advancedFilters, setAdvancedFilters] = useState<FilterConfig>({
+    types: [],
+    statuses: [],
+    floors: [],
+    systems: [],
+  });
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -51,16 +49,40 @@ export default function Assets() {
     localStorage.setItem('assets', JSON.stringify(assets));
   }, [assets]);
 
+  // Extract available floors and systems from assets
+  const { availableFloors, availableSystems } = useMemo(() => {
+    const floors = new Set<string>();
+    const systems = new Set<string>();
+    assets.forEach((asset) => {
+      // Extract floor from location (e.g., "Tầng 1", "Floor 2")
+      const floorMatch = asset.location.match(/(Tầng|Floor|T)\s*(\d+)/i);
+      if (floorMatch) floors.add(`Tầng ${floorMatch[2]}`);
+      // System based on type
+      if (['AHU', 'FCU', 'Chiller'].includes(asset.type)) systems.add('HVAC');
+      if (['Pump'].includes(asset.type)) systems.add('Nước');
+      if (['Compressor', 'Motor'].includes(asset.type)) systems.add('Cơ khí');
+    });
+    return {
+      availableFloors: Array.from(floors).sort(),
+      availableSystems: Array.from(systems).sort(),
+    };
+  }, [assets]);
+
   const filteredAssets = assets.filter(asset => {
     const matchesSearch =
       asset.name.toLowerCase().includes(search.toLowerCase()) ||
       asset.id.toLowerCase().includes(search.toLowerCase()) ||
       asset.location.toLowerCase().includes(search.toLowerCase());
 
-    const matchesType = typeFilter === 'all' || asset.type === typeFilter;
-    const matchesStatus = statusFilter === 'all' || asset.status === statusFilter;
+    const matchesType = advancedFilters.types.length === 0 || advancedFilters.types.includes(asset.type);
+    const matchesStatus = advancedFilters.statuses.length === 0 || advancedFilters.statuses.includes(asset.status);
+    const matchesFloor = advancedFilters.floors.length === 0 || advancedFilters.floors.some(f => asset.location.includes(f.replace('Tầng ', '')));
+    const matchesSystem = advancedFilters.systems.length === 0 || 
+      (advancedFilters.systems.includes('HVAC') && ['AHU', 'FCU', 'Chiller'].includes(asset.type)) ||
+      (advancedFilters.systems.includes('Nước') && ['Pump'].includes(asset.type)) ||
+      (advancedFilters.systems.includes('Cơ khí') && ['Compressor', 'Motor'].includes(asset.type));
 
-    return matchesSearch && matchesType && matchesStatus;
+    return matchesSearch && matchesType && matchesStatus && matchesFloor && matchesSystem;
   });
 
   const handleCreate = async () => {
@@ -166,32 +188,12 @@ export default function Assets() {
         </div>
 
         <div className="flex gap-2 sm:gap-4">
-          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as AssetType | 'all')}>
-            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
-              <SelectValue placeholder="Loại" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả loại</SelectItem>
-              <SelectItem value="AHU">AHU</SelectItem>
-              <SelectItem value="FCU">FCU</SelectItem>
-              <SelectItem value="Chiller">Chiller</SelectItem>
-              <SelectItem value="Pump">Máy bơm</SelectItem>
-              <SelectItem value="Compressor">Máy nén</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as AssetStatus | 'all')}>
-            <SelectTrigger className="w-[120px] sm:w-[150px] bg-muted/50">
-              <SelectValue placeholder="Trạng thái" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="online">Hoạt động</SelectItem>
-              <SelectItem value="warning">Cảnh báo</SelectItem>
-              <SelectItem value="critical">Nghiêm trọng</SelectItem>
-              <SelectItem value="offline">Ngừng</SelectItem>
-            </SelectContent>
-          </Select>
+          <AdvancedFilters
+            filters={advancedFilters}
+            onFiltersChange={setAdvancedFilters}
+            availableFloors={availableFloors}
+            availableSystems={availableSystems}
+          />
 
           <div className="hidden sm:flex items-center border border-border rounded-lg p-1">
             <Button
